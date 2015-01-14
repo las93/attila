@@ -1,0 +1,22 @@
+{
+    "name": "las93/attila",
+    "license": "MIT",
+    "version": "1.0.0-alpha1",
+    "type": "ORM",
+    "description": "ORM in PHP",
+    "keywords": ["orm"],
+    "homepage": "https://github.com/las93/apollina",
+    "authors": [
+        {
+            "name": "Paquet Judicaël",
+            "email": "las92i@homail.fr",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "Attila": "/" }
+    },
+    "require": {
+        "php": ">=5.3.0"
+    }
+}
