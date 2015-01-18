@@ -6,15 +6,13 @@
  * @category  	Attila
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
- * @license   	https://github.com/las93/venus2/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
+ * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
  * @version   	Release: 1.0.0
- * @filesource	https://github.com/las93/venus2
+ * @filesource	https://github.com/las93/attila
  * @link      	https://github.com/las93
- * @since     	1.0
+ * @since     	1.0.0
  */
 namespace Attila;
-
-use \Venus\core\Config as Config;
 
 /**
  * Db Manager
@@ -22,11 +20,11 @@ use \Venus\core\Config as Config;
  * @category  	Attila
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
- * @license   	https://github.com/las93/venus2/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
+ * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
  * @version   	Release: 1.0.0
- * @filesource	https://github.com/las93/venus2
+ * @filesource	https://github.com/las93/attila
  * @link      	https://github.com/las93
- * @since     	1.0
+ * @since     	1.0.0
  */
 class Db 
 {
@@ -43,19 +41,22 @@ class Db
 	 *
 	 * @access public
 	 * @param  string sName name of the configuration
+	 * @param  string $sType kind of database
+	 * @param  string $sHost host of the connection (path for sqlite)
+	 * @param  string $sUser user of the connection
+	 * @param  string $sPassword password of the connection
+	 * @param  string $sDbName name of the connection
 	 * @return void
 	 */
-	public static function connect($sName)
+	public static function connect($sName, $sType = 'mysql', $sHost = 'localhost', $sUser = 'root', $sPassword = '', $sDbName = 'demo')
 	{
 		if (!isset(self::$_oPdo[$sName])) {
 
-			$oDbConf = Config::get('Db')->configuration;
-
-			if ($oDbConf->{$sName}->type == 'mysql') {
+			if ($sType == 'mysql') {
 
 				try {
 
-					self::$_oPdo[$sName] = new \PDO('mysql:host='.$oDbConf->{$sName}->host.';dbname='.$oDbConf->{$sName}->db, $oDbConf->{$sName}->user, $oDbConf->{$sName}->password, array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+					self::$_oPdo[$sName] = new \PDO('mysql:host='.$sHost.';dbname='.$sDbName, $sUser, $sPassword, array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 					self::$_oPdo[$sName]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);
 					self::$_oPdo[$sName]->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 				}
@@ -66,13 +67,13 @@ class Db
 			}
 			else if ($oDbConf->{$sName}->type == 'mssql') {
 
-				self::$_oPdo[$sName] = new \PDO('mssql:host='.$oDbConf->{$sName}->host.';dbname='.$oDbConf->{$sName}->db, $oDbConf->{$sName}->user, $oDbConf->{$sName}->password);
+				self::$_oPdo[$sName] = new \PDO('mssql:host='.$sHost.';dbname='.$sDbName, $sUser, $sPassword);
 				self::$_oPdo[$sName]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);
 				self::$_oPdo[$sName]->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 			}
 			else if ($oDbConf->{$sName}->type == 'sqlite') {
 
-				self::$_oPdo[$sName] = new \PDO('sqlite:'.$oDbConf->{$sName}->path);
+				self::$_oPdo[$sName] = new \PDO('sqlite:'.$sHost);
 				self::$_oPdo[$sName]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);
 				self::$_oPdo[$sName]->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 			}
