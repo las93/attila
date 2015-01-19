@@ -44,8 +44,6 @@ class Entity
 	 */
 	public static function setEntityNamespace($sEntityNamespace) 
 	{
-// 		if ($sOtherPortal === null) { self::$_sEntityNamespace = '\Venus\\src\\'.PORTAIL.'\Entity\\'; }
-// 		else { self::$_sEntityNamespace = '\Venus\\src\\'.$sOtherPortal.'\Entity\\'; }
 	    self::$_sEntityNamespace = $sEntityNamespace;
 	}
 
@@ -76,7 +74,6 @@ class Entity
 			self::setEntityNamespace($sEntityNamespace);
 		}
 			
-
 		$sEntityName = self::$_sEntityNamespace.$sEntity;
 
 		if (!class_exists($sEntityName)) { return; }
@@ -131,8 +128,6 @@ class Entity
 	 */
 	public static function getAllEntity($oEntityCall, $bReturnNotNulOnly = false)
 	{
-		self::setEntityNamespace();
-
 		if (!is_object($oEntityCall)) { return array(); }
 
 		$oReflectionClass = new \ReflectionClass(get_class($oEntityCall));
@@ -173,8 +168,6 @@ class Entity
 	 */
 	public static function getPrimaryKeyName($oEntity)
 	{
-		self::setEntityNamespace();
-
 		$aEntitieSetup = array();
 
 		$oReflectionClass = new \ReflectionClass($oEntity);
@@ -208,8 +201,6 @@ class Entity
 	 */
 	public static function getPrimaryKeyNameWithoutMapping($oEntity)
 	{
-		self::setEntityNamespace();
-
 		$aEntitieSetup = array();
 
 		$oReflectionClass = new \ReflectionClass($oEntity);
@@ -239,8 +230,6 @@ class Entity
 	 */
 	public static function getNoPrimaryKeyFields($oEntity)
 	{
-		self::setEntityNamespace();
-
 		$aEntitieSetup = array();
 
 		$oReflectionClass = new \ReflectionClass($oEntity);
@@ -271,8 +260,6 @@ class Entity
 	 */
 	public static function getRealEntity($oEntity) 
 	{
-		self::setEntityNamespace();
-
 		$oEntitieSetup = new \stdClass;
 
 		$oReflectionClass = new \ReflectionClass($oEntity);

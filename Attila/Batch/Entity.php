@@ -22,6 +22,7 @@
 namespace Attila\Batch;
 
 use \Attila\Db as Db;
+use \Attila\Db\Container as DbContainer;
 use \Venus\core\Config as Config;
 
 /**
@@ -52,7 +53,10 @@ class Entity
         "e" => false, 
         "d" => false, 
         "f" => false,
-        "a" => "string"
+        "a" => "string",
+        "g" => "string",
+        "h" => "string",
+        "i" => "string"
     );
     
 	/**
@@ -137,6 +141,38 @@ class Entity
 		if (isset($aOptions['d'])) { $bDropTable = true; }
 		else { $bDropTable = false; }
 
+		/**
+		 * option -g [indicate the Entities directory]
+		 */
+
+	    if (isset($aOptions['g'])) { $sEntitiesPath = $aOptions['g']; }
+		else { $sEntitiesPath = ''; }
+
+		/**
+		 * option -h [indicate the Models directory]
+		 */
+
+	    if (isset($aOptions['h'])) { $sModelsPath = $aOptions['h']; }
+		else { $sModelsPath = ''; }
+
+		/**
+		 * option -i [indicated the const json file to manage annotation in files]
+		 */
+
+	    if (isset($aOptions['i'])) { $oConstJson = json_decode(file_get_contents($aOptions['i']));}
+		else { $oConstJson = '../Const.conf'; }
+		
+		if (is_object($oConstJson)) {
+		    
+		    foreach ($oConstJson as $sKey => $mValue) {
+		        
+		        if (is_tring($mValue) || is_int($mValue) || is_float($mValue)) {
+		            
+		            if (!defined(strtoupper($sKey))) { define(strtoupper($sKey), $mValue); }
+		        }
+		    }
+		}
+
 		if ($sSqlJsonFile !== false) { $oJson = json_decode(file_get_contents($sSqlJsonFile)); }
 		else { $oJson = json_decode($sSqlJson); }
 		
@@ -159,7 +195,16 @@ class Entity
 
 			if ($bCreate === true) {
 
-				$oPdo = Db::connect($sConnectionName);
+			    $oContainer = new DbContainer;
+
+        		$oContainer->setDbName($oConnection->db)
+        		           ->setHost($oConnection->host)
+        		           ->setName($sConnectionName)
+        		           ->setPassword($oConnection->password)
+        		           ->setType($oConnection->type)
+        		           ->setUser($oConnection->user);
+			    
+				$oPdo = Db::connect($oContainer);
 
 				foreach ($oConnection->tables as $sTableName => $oOneTable) {
 				    
@@ -279,8 +324,6 @@ class Entity
 					$sQuery .= ')';
 
 					$oPdo->query($sQuery);
-					
-					echo $sQuery.'<br/>';
 				}
 			}
 
@@ -297,8 +340,8 @@ class Entity
 /**
  * Entity to '.$sTableName.'
  *
- * @category  	src
- * @package   	src\\'.$sPortail.'\Entity
+ * @category  	\\'.CATEGORY.'
+ * @package   	'.ENTITY_NAMESPACE.'
  * @author    	'.AUTHOR.'
  * @copyright 	'.COPYRIGHT.'
  * @license   	'.LICENCE.'
@@ -307,16 +350,16 @@ class Entity
  * @link      	'.LINK.'
  * @since     	1.0
  */
-namespace Venus\src\\'.$sPortail.'\Entity;
+namespace '.preg_replace('/^\\\\/', '', ENTITY_NAMESPACE).';
 
-use \Venus\core\Entity as Entity;
-use \Venus\lib\Vendor as Vendor;
+use \Attila\core\Entity as Entity;
+use \Attila\Orm as Orm;
 
 /**
  * Entity to '.$sTableName.'
  *
- * @category  	src
- * @package   	src\\'.$sPortail.'\Entity
+ * @category  	\\'.CATEGORY.'
+ * @package   	'.ENTITY_NAMESPACE.'
  * @author    	'.AUTHOR.'
  * @copyright 	'.COPYRIGHT.'
  * @license   	'.LICENCE.'
@@ -368,7 +411,7 @@ class '.$sTableName.' extends Entity
 	 * @access private
 	 * @var    '.$sType.'
 	 *
-	';
+';
 	
 						if (isset($oField->key) && $oField->key == 'primary') {
 	
@@ -382,8 +425,6 @@ class '.$sTableName.' extends Entity
 	
 						$sContentFile .= '	 */
     private $'.$sFieldName.' = null;
-	
-	
 	';
 						if (isset($oField->join)) {
 	
@@ -467,7 +508,7 @@ class '.$sTableName.' extends Entity
 	 *
 	 * @access public
 	 * @param  '.$sType.' $'.$sFieldName.' '.$sFieldName.' of '.$sTableName.'
-	 * @return \Venus\src\\'.$sPortail.'\Entity\\'.$sTableName.'
+	 * @return '.ENTITY_NAMESPACE.'\\'.$sTableName.'
 	 */
 	public function set_'.$sFieldName.'($'.$sFieldName.') 
 	{
@@ -514,7 +555,7 @@ class '.$sTableName.' extends Entity
     							}
     							else {
     								    
-    							    $sContentFile .= '\Venus\src\\'.$sPortail.'\Entity\\'.$sTableName;
+    							    $sContentFile .= ENTITY_NAMESPACE.'\\'.$sTableName;
     							}
     			                     
     							$sContentFile .= '
@@ -563,7 +604,7 @@ class '.$sTableName.' extends Entity
 	 * set '.$sJoinUsedName.' entity join by '.$sFieldName.' of '.$sTableName.'
 	 *
 	 * @access public
-	 * @param  \Venus\src\\'.$sPortail.'\Entity\\'.$oField->join[$i].'  $'.$sJoinUsedName.' '.$oField->join[$i].' entity
+	 * @param  '.ENTITY_NAMESPACE.'\\'.$oField->join[$i].'  $'.$sJoinUsedName.' '.$oField->join[$i].' entity
 	 * @join
 	 * @return ';
 		 
@@ -573,7 +614,7 @@ class '.$sTableName.' extends Entity
     							}
     							else {
     								    
-    							    $sContentFile .= '\Venus\src\\'.$sPortail.'\Entity\\'.$sTableName;
+    							    $sContentFile .= ENTITY_NAMESPACE.'\\'.$sTableName;
     							}
     			                     
     							$sContentFile .= '
@@ -586,7 +627,7 @@ class '.$sTableName.' extends Entity
     							}
     							else {
     								    
-    							    $sContentFile .= '\Venus\src\\'.$sPortail.'\Entity\\'.$oField->join[$i];
+    							    $sContentFile .= ENTITY_NAMESPACE.'\\'.$oField->join[$i];
     							}
 			                     
 							    $sContentFile .= ' $'.$sJoinUsedName.')
@@ -601,18 +642,18 @@ class '.$sTableName.' extends Entity
 	
 					$sContentFile .= '}';
 	
-					file_put_contents(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.$sPortail.DIRECTORY_SEPARATOR.'Entity'.DIRECTORY_SEPARATOR.$sTableName.'.php', $sContentFile);
+					file_put_contents($sEntitiesPath.$sTableName.'.php', $sContentFile);
 	
 					if ($bCreateModelIfNotExists === false || ($bCreateModelIfNotExists === true 
-						&& !file_exists(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.$sPortail.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.$sTableName.'.php'))) {
+						&& !file_exists($sModelsPath.$sTableName.'.php'))) {
 					
 						$sContentFile = '<?php
 	
 /**
  * Model to '.$sTableName.'
  *
- * @category  	src
- * @package   	src\\'.$sPortail.'\Model
+ * @category  	\\'.CATEGORY.'
+ * @package   	'.MODEL_NAMESPACE.'
  * @author    	'.AUTHOR.'
  * @copyright 	'.COPYRIGHT.'
  * @license   	'.LICENCE.'
@@ -628,8 +669,8 @@ use \Venus\core\Model as Model;
 /**
  * Model to '.$sTableName.'
  *
- * @category  	src
- * @package   	src\\'.$sPortail.'\Model
+ * @category  	\\'.CATEGORY.'
+ * @package   	'.MODEL_NAMESPACE.'
  * @author    	'.AUTHOR.'
  * @copyright 	'.COPYRIGHT.'
  * @license   	'.LICENCE.'
@@ -642,7 +683,7 @@ class '.$sTableName.' extends Model
 {
 }'."\n";
 	
-						file_put_contents(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.$sPortail.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.$sTableName.'.php', $sContentFile);
+						file_put_contents($sModelsPath.$sTableName.'.php', $sContentFile);
 					}
 				}
 			}

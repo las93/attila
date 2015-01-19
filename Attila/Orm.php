@@ -15,6 +15,7 @@
 namespace Attila;
 
 use \Attila\Db as Db;
+use \Attila\Db\Container as Container;
 use \Attila\Entity as Entity;
 use \Attila\Orm\Where as Where;
 
@@ -196,12 +197,41 @@ class Orm
 	 * constructor to create the symlink to \Attila\Orm\Where
 	 *
 	 * @access public
-	 * @param  array $aSelect select
+	 * @param string $sName
+	 * @param string $sType
+	 * @param string $sHost
+	 * @param string $sUser
+	 * @param string $sPassword
+	 * @param string $sDbName
 	 * @return \Attila\Orm
 	 */
-	public function __construct() 
+	public function __construct($sName = null, $sType = null, $sHost = null, $sUser = null, $sPassword = null, $sDbName = null) 
 	{
-		$this->where = new Where;
+	    if ($sName === null && $sType === null && $sHost === null && $sUser === null && $sPassword === null
+	        && $sDbName === null && Db::getContainer() !== null) {
+
+	        $this->where = new Where;
+	    }
+	    else if ($sName === null && $sType === null && $sHost === null && $sUser === null && $sPassword === null
+	        && $sDbName === null && Db::getContainer() === null) {
+
+	        throw new \Exception("Error: No connection define!");
+	    }
+	    else {
+
+	        $oContainer = new Container;
+	        
+	        $oContainer->setDbName($sDbName)
+	                   ->setHost($sHost)
+	                   ->setName($sName)
+	                   ->setPassword($sPassword)
+	                   ->setType($sType)
+	                   ->setUser($sUser);
+
+	        Db::setContainer($oContainer);
+	        $this->setDefaultDb($sName);
+            $this->where = new Where;
+	    }
 	}
 
 	/**
@@ -432,7 +462,7 @@ class Orm
 
 		if ($bDebug === true) { echo $sQuery;  }
 
-		$aResults = Db::connect($this->_sDefaultDb)->query($sQuery)->fetchAll(\PDO::FETCH_ASSOC);
+		$aResults = self::connect()->query($sQuery)->fetchAll(\PDO::FETCH_ASSOC);
 		$aReturn = array();
 		$i = 0;
 
@@ -493,7 +523,7 @@ class Orm
 
 		if (preg_match('/INSERT INTO/i', $sQuery)) {
 
-			$oDb = Db::connect($this->_sDefaultDb);
+			$oDb = self::connect();
 			$oDb->exec($sQuery);
 			$this->flush();
 			return $oDb->lastInsertId();
@@ -504,7 +534,7 @@ class Orm
 
 			if ($this->_mWhere instanceof Where) { $this->_mWhere->flush(); }
 
-			return Db::connect($this->_sDefaultDb)->exec($sQuery);
+			return self::connect()->exec($sQuery);
 		}
 
 	}
@@ -580,7 +610,7 @@ class Orm
 
 					if ($sValue !== null) {
 
-						$sQuery .= "`".$sKey."` = ".Db::connect($this->_sDefaultDb)->quote($sValue).",";
+						$sQuery .= "`".$sKey."` = ".self::connect()->quote($sValue).",";
 					}
 				}
 			}
@@ -603,7 +633,7 @@ class Orm
 
 			foreach ($this->_aValues as $sKey => $sValue) {
 
-				if (!is_array($sValue)) { $sQuery .= "".Db::connect($this->_sDefaultDb)->quote($sValue).","; }
+				if (!is_array($sValue)) { $sQuery .= "".self::connect()->quote($sValue).","; }
 			}
 
 			$sQuery = substr($sQuery, 0, -1);
@@ -615,7 +645,7 @@ class Orm
 			    
     			foreach ($this->_aOnDuplicateKeyUpdate as $sKey => $sValue) {
     			    
-    			    $sQuery .= " ".$sKey." = ".Db::connect($this->_sDefaultDb)->quote($sValue).",";
+    			    $sQuery .= " ".$sKey." = ".self::connect()->quote($sValue).",";
     			}
     			
     			$sQuery = substr($sQuery, 0, -1);
@@ -824,5 +854,17 @@ class Orm
 		$this->_aGroupBy = array();
 		$this->_iLimit = null;
 		return $this;
+	}
+
+	/**
+	 * connect on DB
+	 *
+	 * @access public
+	 * @return string
+	 */
+	public static function connect()
+	{
+	    if (Db::getContainer() instanceof Container) { return Db::connect(Db::getContainer()); }
+	    else { echo "Error of connection"; }
 	}
 }

@@ -1,7 +1,7 @@
 {
     "name": "las93/attila",
     "license": "MIT",
-    "version": "1.0.0-alpha2",
+    "version": "1.0.0-beta1",
     "type": "ORM",
     "description": "ORM in PHP",
     "keywords": ["orm"],
