@@ -39,13 +39,14 @@ class Entity
 	 * add the namespace
 	 *
 	 * @access public
-	 * @param  string $sOtherPortal select another portal
+	 * @param  string $sEntityNamespace set the entity namespace
 	 * @return void
 	 */
-	public static function setEntityNamespace($sOtherPortal = null) 
+	public static function setEntityNamespace($sEntityNamespace) 
 	{
-		if ($sOtherPortal === null) { self::$_sEntityNamespace = '\Venus\\src\\'.PORTAIL.'\Entity\\'; }
-		else { self::$_sEntityNamespace = '\Venus\\src\\'.$sOtherPortal.'\Entity\\'; }
+// 		if ($sOtherPortal === null) { self::$_sEntityNamespace = '\Venus\\src\\'.PORTAIL.'\Entity\\'; }
+// 		else { self::$_sEntityNamespace = '\Venus\\src\\'.$sOtherPortal.'\Entity\\'; }
+	    self::$_sEntityNamespace = $sEntityNamespace;
 	}
 
 	/**
@@ -63,20 +64,16 @@ class Entity
 	 * @param  array $aSql results in array by the sql array('id' => 1, 'title' => 'super');
 	 * @param  string $sPrefix prefixe for the sql returns
 	 * @param  bool $bAddOnStdClass add the parameter when there arent method of entity
-	 * @param  string $sOtherPortail change the default portal for the entity
+	 * @param  string $sEntityNamespace change the default portal for the entity
 	 * @return object
 	 */
-	public static function autoLoadEntity($sEntity, array $aSql, $sPrefix = '', $bAddOnStdClass = false, $sOtherPortail = null) 
+	public static function autoLoadEntity($sEntity, array $aSql, $sPrefix = '', $bAddOnStdClass = false, $sEntityNamespace = null) 
 	{
 		if ($sEntity === '') { return; }
 
-		if ($sOtherPortail === null) {
+		if ($sEntityNamespace !== null) {
 			
-			self::setEntityNamespace();
-		}
-		else {
-
-			self::setEntityNamespace($sOtherPortail);
+			self::setEntityNamespace($sEntityNamespace);
 		}
 			
 

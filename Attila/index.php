@@ -11,18 +11,20 @@
  * @filesource	https://github.com/las93/venus2
  * @link      	https://github.com/las93
  * @since     	1.0
+ * 
+ * @tutorial    php index.php -p Demo -a Db.conf
  */
 
 namespace Attila;
 
 use \Attila\Batch\Entity as Entity;
 
+include('../../../autoload.php');
+
 if (isset($_SERVER['argv'])) { $aArguments = $_SERVER['argv']; }
 else { $aArguments = $argv; }
 
 $sBatchName = $aArguments[1];
-//$oBatch = Config::get('Route')->batch->script->{$sBatchName};
-array_shift($aArguments);
 array_shift($aArguments);
 
 $aOptions = array();

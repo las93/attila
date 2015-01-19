@@ -45,7 +45,15 @@ class Entity
      * @access public
      * @var    array
      */
-    public static $aOptionsBatch = array("p" => "string", "r" => false, "c" => false, "e" => false, "d" => false, "f" => false);
+    public static $aOptionsBatch = array(
+        "p" => "string", 
+        "r" => false, 
+        "c" => false, 
+        "e" => false, 
+        "d" => false, 
+        "f" => false,
+        "a" => "string"
+    );
     
 	/**
 	 * run the batch to create entity
@@ -63,8 +71,15 @@ class Entity
 		 * option -p [portail]
 		 */
 
-		if (isset($aOptions['p'])) { $sPortail = $aOptions['p']; }
-		else { $sPortail = 'Batch'; }
+		if (isset($aOptions['p'])) { 
+		    
+		    $sPortail = $aOptions['p'];
+		}
+		else { 
+		    
+		    echo 'Error: you must indicated the Entity Path';
+		    exit;
+		}
 
 		/**
 		 * option -r [yes/no]
@@ -88,7 +103,7 @@ class Entity
 		else { $bCreateEntity = false; }
 
 		/**
-		 * option -e [create models if not exists]
+		 * option -f [create models if not exists]
 		 */
 
 		if (isset($aOptions['f'])) { 
@@ -102,23 +117,40 @@ class Entity
 		}
 
 		/**
+		 * option -a [indicated the sql json file]
+		 */
+
+	    if (isset($aOptions['a'])) { $sSqlJsonFile = $aOptions['a']; }
+		else { $sSqlJsonFile = false; }
+
+		/**
+		 * option -b [indicated the sql json]
+		 */
+
+	    if (isset($aOptions['b'])) { $sSqlJson = $aOptions['b']; }
+		else { $sSqlJson = false; }
+
+		/**
 		 * option -d [drop table]
 		 */
 
 		if (isset($aOptions['d'])) { $bDropTable = true; }
 		else { $bDropTable = false; }
 
-		$oConfiguration = Config::get('Db', $sPortail)->configuration;
+		if ($sSqlJsonFile !== false) { $oJson = json_decode(file_get_contents($sSqlJsonFile)); }
+		else { $oJson = json_decode($sSqlJson); }
+		
+		$oConfiguration = $oJson->configuration;
 
 		foreach ($oConfiguration as $sConnectionName => $oConnection) {
 
 		    if ($oConnection->type == 'mysql') {
 
-		        define(SQL_FIELD_NAME_SEPARATOR, '`');
+		        define('SQL_FIELD_NAME_SEPARATOR', '`');
 		    }
 		    else {
 		        
-		        define(SQL_FIELD_NAME_SEPARATOR, '');
+		        define('SQL_FIELD_NAME_SEPARATOR', '');
 		    }
 		    
 			/**
