@@ -47,6 +47,14 @@ abstract class Entity
 	 * @var    mixed
 	 */
 	private $_mPrimaryKeyNameWithoutMapping;
+	
+    /**
+     * Cache to know if a model was initialize or not because we must initialize it just one time by script
+     * 
+     * @access private
+     * @var    array
+     */
+    private static $_aInitialize = array();
 
 	/**
 	 * Constructor
@@ -58,6 +66,23 @@ abstract class Entity
 	{
 		$this->_loadPrimaryKeyName(LibEntity::getPrimaryKeyName($this));
 		$this->_loadPrimaryKeyNameWithoutMapping(LibEntity::getPrimaryKeyNameWithoutMapping($this));
+		
+		/**
+		 * Trigger on a model to initialize it. You could fill entity with it.
+		 */
+		if (method_exists(get_called_class(), 'initialize')) {
+		    
+		    if (!isset(self::$_aInitialize[get_called_class()])) { 
+		        
+		        static::initialize();
+		        self::$_aInitialize[get_called_class()] = true;
+		    }
+		}
+		
+		/**
+		 * Trigger on a model to initialize it every time you construct it
+		 */
+		if (method_exists(get_called_class(), 'onConstruct')) { static::onConstruct(); }
 	}
 
 	/**
@@ -95,6 +120,11 @@ abstract class Entity
 	 */
 	public function save($bOnDuplicateKeyUpdate = false)
 	{
+	    /**
+	     * Trigger on an entity to initialize it before the save
+	     */
+	    if (method_exists(get_called_class(), 'beforeSave')) { static::beforeSave(); }
+	    
 		$mPrimaryKeyName = $this->_mPrimaryKeyName;
 		
 		if ($bOnDuplicateKeyUpdate === false) { $bInsertMode = false; }

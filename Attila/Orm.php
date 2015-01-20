@@ -508,6 +508,17 @@ class Orm
 
 		if ($this->_mWhere instanceof Where) { $this->_mWhere->flush(); }
 
+		/**
+		 * Trigger on a model to initialize it every time you load each entity
+		 */
+		if (isset($aReturn[0]) && method_exists($aReturn[0], 'afterFetch')) {
+		    
+		    foreach ($aReturn as $iKey => $oOne) {
+		    
+		        $aReturn[$iKey]::afterFetch();
+		    }
+		}
+		
 		return $aReturn;
 	}
 
@@ -866,5 +877,38 @@ class Orm
 	{
 	    if (Db::getContainer() instanceof Container) { return Db::connect(Db::getContainer()); }
 	    else { echo "Error of connection"; }
+	}
+
+	/**
+	 * begin a transaction
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function begin()
+	{
+	    return self::connect()->beginTransaction();
+	}
+
+	/**
+	 * commit a transaction
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function commit()
+	{
+	    return self::connect()->commit();
+	}
+
+	/**
+	 * rollback a transaction
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function rollback()
+	{
+	    return self::connect()->rollBack();
 	}
 }
