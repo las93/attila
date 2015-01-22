@@ -215,10 +215,10 @@ class Orm
 	    else if ($sName === null && $sType === null && $sHost === null && $sUser === null && $sPassword === null
 	        && $sDbName === null && Db::getContainer() === null) {
 
-	        throw new \Exception("Error: No connection define!");
+	            throw new \Exception("Error: No connection define!");
 	    }
 	    else {
-
+	        
 	        $oContainer = new Container;
 	        
 	        $oContainer->setDbName($sDbName)

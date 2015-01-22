@@ -210,6 +210,48 @@ class Entity
 				    
     				foreach ($oOneTable->fields as $sFieldName => $oOneField) {
     				
+    				    if (isset($oOneField->many_to_many)) {
+    				        
+    				        if (!isset($oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many})) {
+    				            
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many} = new \stdClass();
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields = new \stdClass();
+
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName} = new \stdClass();
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->type = $oOneField->type;
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->key = 'primary';
+    				            
+    				            if (isset($oOneField->null)) {
+    				                
+    				                $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->null = $oOneField->null;
+    				            }
+    				            
+    				            if (isset($oOneField->unsigned)) {
+    				            
+    				                $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->unsigned = $oOneField->unsigned;
+    				            }
+    				            
+    				            foreach ($oConnection->tables->{$oOneField->many_to_many}->fields as $sNameOfManyToManyField => $oField) {
+    				            
+    				                if (isset($oField->key) && $oField->key == 'primary') { $sFieldOfManyToMany = $oField; }
+    				            }
+    				            
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many} = new \stdClass();
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->type = $sFieldOfManyToMany->type;
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->key = 'primary';
+    				            
+    				            if (isset($sFieldOfManyToMany->null)) {
+    				                
+    				                $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->null = $sFieldOfManyToMany->null;
+    				            }
+    				            
+    				            if (isset($sFieldOfManyToMany->unsigned)) {
+    				            
+    				                $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->unsigned = $sFieldOfManyToMany->unsigned;
+    				            }
+    				        }
+    				    }
+    				    
     				    if (isset($oOneField->join)) {
 
     				        if (isset($oOneField->join_by_field)) { $sJoinByField = $oOneField->join_by_field; }
@@ -586,7 +628,7 @@ class '.$sTableName.' extends Entity
     							}
     			                     
     							$sContentFile .= ' = $oOrm->where($aWhere)
-						           ->load(false, \''.$sPortail.'\');';
+						           ->load(false, \''.ENTITY_NAMESPACE.'\');';
 		 
     							if (!isset($oField->key) || (isset($oField->key) && $oField->key != 'primary')) { 
     								    

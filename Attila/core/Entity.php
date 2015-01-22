@@ -55,6 +55,14 @@ abstract class Entity
      * @var    array
      */
     private static $_aInitialize = array();
+	
+    /**
+     * Array to stock all join
+     * 
+     * @access private
+     * @var    array
+     */
+    private static $_aJoins = array();
 
 	/**
 	 * Constructor
@@ -263,5 +271,103 @@ abstract class Entity
 			$sPropertyName = preg_replace('/^set_/', '', $sName);
 			return $this->$sPropertyName = $aArguments[0];
 		}
+		else if (preg_match('/^get_/', $sName) && $this->_aJoins[preg_replace('/^get_/', '', $sName)]) {
+
+			return $this->_aJoins[preg_replace('/^get_/', '', $sName)]();
+		}
+	}
+
+	/**
+	 * create a join in one to many
+	 *
+	 * @access public
+	 * @param string $sPrimaryKeyName
+	 * @param string $sEntityJoinName
+	 * @param string $sForeignKeyName
+	 * @param string $sNamespaceEntity
+	 * @param array $aOptions
+	 * @return array
+	 */
+	public function hasMany($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity, array $aOptions = array())
+	{
+	    $this->_aJoins[$sEntityJoinName] = function($mParameters = null) use ($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity)
+	    {
+	        if (!isset($this->$sEntityJoinName)) {
+	        
+	            $oOrm = new Orm;
+	        
+	            $oOrm->select(array('*'))
+	                 ->from($sEntityJoinName);
+
+	            if ($mParameters) { 
+	                
+	                $aWhere[$sForeignKeyName] = $mParameters; 
+	            }
+	            else { 
+	                
+	                $sMethodName = 'get_'.$sPrimaryKeyName;
+	                $aWhere[$sForeignKeyName] = $this->$sMethodName(); 
+	            }
+	            	
+	            	
+	            $this->$sEntityJoinName = $oOrm->where($aWhere)
+	                                           ->load(false, $sNamespaceEntity.'\\');
+	        }
+	        
+	        return $this->$sEntityJoinName;
+	    };
+	}
+
+	/**
+	 * create a join in one to one
+	 *
+	 * @access public
+	 * @param string $sPrimaryKeyName
+	 * @param string $sEntityJoinName
+	 * @param string $sForeignKeyName
+	 * @param string $sNamespaceEntity
+	 * @param array $aOptions
+	 * @return object
+	 */
+	public function hasOne($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity, array $aOptions = array())
+	{
+	    $this->_aJoins[$sEntityJoinName] = function($mParameters = null) use ($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity)
+	    {
+	        if (!isset($this->$sEntityJoinName)) {
+	        
+	            $oOrm = new Orm;
+	        
+	            $oOrm->select(array('*'))
+	                 ->from($sEntityJoinName);
+
+	            if ($mParameters) { 
+	                
+	                $aWhere[$sForeignKeyName] = $mParameters; 
+	            }
+	            else { 
+	                
+	                $sMethodName = 'get_'.$sPrimaryKeyName;
+	                $aWhere[$sForeignKeyName] = $this->$sMethodName(); 
+	            }
+	            		            	
+	            $this->$sEntityJoinName = $oOrm->where($aWhere)
+	                                           ->load(false, $sNamespaceEntity.'\\');
+	        }
+
+	        return $this->{$sEntityJoinName}[0];
+	    };
+	}
+
+	/**
+	 * create a join in one to one
+	 *
+	 * @access public
+	 * @param string $sEntityJoinName
+	 * @param mixed $mParameters
+	 * @return mixed
+	 */
+	public function getRelated($sEntityJoinName, $mParameters)
+	{
+	    return $this->_aJoins[$sEntityJoinName]($mParameters);
 	}
 }
