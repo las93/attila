@@ -4,6 +4,7 @@
  * Container of the database connection
  *
  * @category  	Attila
+ * @package  	Attila\lib\Db
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
  * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
@@ -12,12 +13,13 @@
  * @link      	https://github.com/las93
  * @since     	1.0.0
  */
-namespace Attila\Db;
+namespace Attila\lib\Db;
 
 /**
  * Container of the database connection
  *
  * @category  	Attila
+ * @package  	Attila\lib\Db
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
  * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
@@ -81,7 +83,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sName
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setName($sName)
 	{
@@ -105,7 +107,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sType
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setType($sType)
 	{
@@ -129,7 +131,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sHost
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setHost($sHost)
 	{
@@ -153,7 +155,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sUser
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setUser($sUser)
 	{
@@ -177,7 +179,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sPassword
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setPassword($sPassword)
 	{
@@ -201,7 +203,7 @@ class Container
 	 *  
 	 *  @access public
 	 *  @param  string $sDbName
-	 *  @return \Attila\Db\Container
+	 *  @return \Attila\lib\Db\Container
 	 */
 	public function setDbName($sDbName)
 	{

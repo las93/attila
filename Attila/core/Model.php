@@ -1,0 +1,637 @@
+<?php
+
+/**
+ * Model Manager
+ *
+ * @category  	Attila
+ * @package   	Attila\core
+ * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
+ * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
+ * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
+ * @version   	Release: 2.0.0
+ * @filesource	https://github.com/las93/attila
+ * @link      	https://github.com/las93
+ * @since     	2.0.0
+ */
+namespace Attila\core;
+
+use \Attila\Orm as Orm;
+use \Attila\lib\Entity as LibEntity;
+use \Attila\Orm\Where as Where;
+
+/**
+ * Model Manager
+ *
+ * @category  	Attila
+ * @package   	Attila\core
+ * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
+ * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
+ * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
+ * @version   	Release: 2.0.0
+ * @filesource	https://github.com/las93/attila
+ * @link      	https://github.com/las93
+ * @since     	2.0.0
+ */
+abstract class Model extends Mother
+{
+    /**
+     * Callback to filter the results
+     * 
+     * @access private
+     * @var    callable
+     */
+    private $_cFilterCallback;
+    
+	/**
+	 * Constructor
+	 *
+	 * @access public
+	 * @param  object $oDbConfig
+	 * @return object
+	 */
+	public function __construct($oDbConfig = null)
+	{
+		$aClass = explode('\\', get_called_class());
+		$sClassName = $aClass[count($aClass) - 1];
+		$sNamespaceName = str_replace('\\'.$aClass[count($aClass) - 1], '', get_called_class());
+
+		if (isset($sClassName)) {
+
+			$sNamespaceBaseName = str_replace('\Model', '', $sNamespaceName);
+			$defaultEntity = $sNamespaceBaseName.'\Entity\\'.$sClassName;
+
+			$this->_sTableName = $sClassName;
+
+			$this->entity = function() use ($defaultEntity) { return new $defaultEntity; };
+
+			$this->orm = function() use ($oDbConfig)
+			{
+			    if ($oDbConfig === null) {
+			        
+			        $oDbConfig = json_decode(file_get_contents(__DIR__.'/../Db.conf'))->configuration;
+			    }
+			    
+			    return new Orm($oDbConfig->db, $oDbConfig->type, $oDbConfig->host, $oDbConfig->user, $oDbConfig->password, 
+			        $oDbConfig->db);
+			};
+			
+			$this->where = function() { return new Where; };
+		}
+	}
+
+	/**
+	 * classic method to find an entity
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return array
+	 */
+	public function find($oEntityCriteria)
+	{
+		$this->_checkEntity($oEntityCriteria);
+		$aEntity = get_object_vars(LibEntity::getRealEntity($oEntityCriteria));
+
+		$sPrimaryKeyName = LibEntity::getPrimaryKeyName($oEntityCriteria);
+
+		$aResults = $this->orm
+			 			 ->select(array('*'))
+			 			 ->from($this->_sTableName)
+			 			 ->where(array($sPrimaryKeyName => $aEntity[$sPrimaryKeyName]))
+						 ->load();
+
+		if ($aResults) { return $aResults[0]; }
+
+		if ($this->_isFilter()) {
+		    
+		    foreach ($aResults as $iKey => $oValue) {
+		        
+		        $aResults[$iKey] = $this->_applyFilter($oValue);
+		    }
+		}
+
+		return $aResults;
+	}
+
+	/**
+	 * magic method to create dynamically each methods
+	 *
+	 * @access public
+	 * @param  string $sName
+	 * @param  array $aArguments
+	 * @return mixed
+	 */
+	public function __call($sName, $aArguments) 
+	{
+		/**
+		 * @example	$oModel->findOneByid(12);
+		 * 			$oModel->findByfirstname('george');
+		 *
+		 * @example	$oModel->findOneOrderByid();
+		 * 			$oModel->findOrderByfirstname();
+		 * 			$oModel->findOneOrderByidDesc();
+		 * 			$oModel->findOrderByfirstnameDesc();
+		 */
+
+        if (preg_match('/^findOneBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
+        	
+        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	
+        	$aResults = $this->orm
+        					 ->select(array('*'))
+        					 ->from($this->_sTableName)
+        					 ->where(array($aMatchs[1] => $aArguments[0]))
+        					 ->limit(1)
+        					 ->load(false, $sEntityNamespace);
+
+        	if (isset($aResults[0]) && $this->_isFilter()) { $aResults[0] = $this->_applyFilter($aResults[0]); }
+        	
+        	if (isset($aResults[0])) { return $aResults[0]; }
+        	else { return array(); }
+        }
+        else if (preg_match('/^findBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
+
+        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	 
+        	$aResults = $this->orm
+        					 ->select(array('*'))
+        					 ->from($this->_sTableName)
+        					 ->where(array($aMatchs[1] => $aArguments[0]))
+        					 ->load(false, $sEntityNamespace);
+
+        	if ($this->_isFilter()) {
+        	
+        	    foreach ($aResults as $iKey => $oValue) {
+        	
+        	        $aResults[$iKey] = $this->_applyFilter($oValue);
+        	    }
+        	}
+        	
+        	return $aResults;
+        }
+        else if (preg_match('/^findOneOrderBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
+
+        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	 
+        	$aMatchs[1] = preg_replace('/^(.+)(Desc)$/', '$1 $2', $aMatchs[1]);
+        	$aMatchs[1] = preg_replace('/^(.+)(Asc)$/', '$1 $2', $aMatchs[1]);
+
+        	$aResults = $this->orm
+        					 ->select(array('*'))
+        					 ->from($this->_sTableName)
+        					 ->orderBy(array($aMatchs[1]))
+        					 ->limit(1)
+        					 ->load(false, $sEntityNamespace);
+
+        	if (isset($aResults[0]) && $this->_isFilter()) { $aResults[0] = $this->_applyFilter($aResults[0]); }
+        	
+        	if (isset($aResults[0])) { return $aResults[0]; }
+        	else { return array(); }
+        }
+        else if (preg_match('/^findOrderBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
+
+        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	 
+        	$aMatchs[1] = preg_replace('/^(.+)(Desc)$/', '$1 $2', $aMatchs[1]);
+        	$aMatchs[1] = preg_replace('/^(.+)(Asc)$/', '$1 $2', $aMatchs[1]);
+
+        	$aResults = $this->orm
+        					 ->select(array('*'))
+        					 ->from($this->_sTableName)
+        					 ->orderBy(array($aMatchs[1]))
+        					 ->load(false, $sEntityNamespace);
+
+        	if ($this->_isFilter()) {
+        	
+        	    foreach ($aResults as $iKey => $oValue) {
+        	
+        	        $aResults[$iKey] = $this->_applyFilter($oValue);
+        	    }
+        	}
+        	
+        	return $aResults;
+        }
+    }
+
+
+    /**
+     * get all line of the tables
+     *
+     * @access public
+     * @return array
+     */
+    public function findAll() 
+    {
+    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	
+    	$aResults = $this->orm
+    					 ->select(array('*'))
+    					 ->from($this->_sTableName)
+    					 ->load(false, $sEntityNamespace);
+    	
+    	if ($this->_isFilter()) {
+    	     
+    	    foreach ($aResults as $iKey => $oValue) {
+    	         
+    	        $aResults[$iKey] = $this->_applyFilter($oValue);
+    	    }
+    	}
+
+    	return $aResults;
+    }
+
+    /**
+     * return an entity that it is found with the arguments
+     *
+     * @access public
+     * @param  array $aArguments
+     * @return object
+     *
+     * @example	$oModel->findOneBy(array('id' => 12);
+     */
+    public function findOneBy(array $aArguments)
+    {
+    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	
+    	$aResults = $this->orm
+    					 ->select(array('*'))
+    					 ->from($this->_sTableName)
+    					 ->where($aArguments)
+    					 ->limit(1)
+    					 ->load(false, $sEntityNamespace);
+
+    	if (isset($aResults[0]) && $this->_isFilter()) { $aResults[0] = $this->_applyFilter($aResults[0]); }
+    	
+    	if (isset($aResults[0])) { return $aResults[0]; }
+    	else { return false; }
+    }
+
+    /**
+     * return list of entities that they are found with the arguments
+     *
+     * @access public
+     * @param  array $aArguments
+     * @return array
+     *
+     * @example	$oModel->findBy(array('id' => 12);
+     */
+    public function findBy(array $aArguments)
+    {
+    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	
+    	$aResults = $this->orm
+    					 ->select(array('*'))
+    					 ->from($this->_sTableName)
+    					 ->where($aArguments)
+    					 ->load(false, $sEntityNamespace);
+    	
+    	if ($this->_isFilter()) {
+    	     
+    	    foreach ($aResults as $iKey => $oValue) {
+    	         
+    	        $aResults[$iKey] = $this->_applyFilter($oValue);
+    	    }
+    	}
+
+    	return $aResults;
+    }
+
+    /**
+     * return an entity that it is found with the arguments
+     *
+     * @access public
+     * @param  array $aArguments
+     * @return object
+     *
+     * @example	$oModel->findOneBy(array('id' => 12);
+     */
+    public function findOneOrderBy(array $aArguments)
+    {
+    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	 
+    	$aResults = $this->orm
+    					 ->select(array('*'))
+    					 ->from($this->_sTableName)
+    					 ->orderBy($aArguments)
+    					 ->limit(1)
+    					 ->load(false, $sEntityNamespace);
+
+    	if (isset($aResults[0]) && $this->_isFilter()) { $aResults[0] = $this->_applyFilter($aResults[0]); }
+
+    	return $aResults[0];
+    }
+
+    /**
+     * return list of entities that they are found with the arguments
+     *
+     * @access public
+     * @param  array $aArguments
+     * @return array
+     *
+     * @example	$oModel->findOrderBy(array('id DESC');
+     */
+    public function findOrderBy(array $aArguments)
+    {
+    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	
+    	$aResults = $this->orm
+    					 ->select(array('*'))
+    					 ->from($this->_sTableName)
+    					 ->orderBy($aArguments)
+    					 ->load(false, $sEntityNamespace);
+    	
+    	if ($this->_isFilter()) {
+    	     
+    	    foreach ($aResults as $iKey => $oValue) {
+    	         
+    	        $aResults[$iKey] = $this->_applyFilter($oValue);
+    	    }
+    	}
+
+    	return $aResults;
+    }
+
+	/**
+	 * classic method to get a list of entities
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return array
+	 */
+	public function get($oEntityCriteria = null)
+	{
+		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		
+		if ($oEntityCriteria !== null) {
+
+			$this->_checkEntity($oEntityCriteria);
+			$aEntityTmp = get_object_vars(LibEntity::getRealEntity($oEntityCriteria));
+			$aEntity = array();
+
+			foreach ($aEntityTmp as $sKey => $mField) {
+
+				if ($mField !== null) {
+
+					$aEntity[$sKey] = $mField;
+				}
+			}
+		}
+		else {
+
+			$aEntity = array();
+		}
+
+		$aResults = $this->orm
+			 			 ->select(array('*'))
+			 			 ->from($this->_sTableName)
+			 			 ->where($aEntity)
+    					 ->load(false, $sEntityNamespace);
+    	
+    	if ($this->_isFilter()) {
+    	     
+    	    foreach ($aResults as $iKey => $oValue) {
+    	         
+    	        $aResults[$iKey] = $this->_applyFilter($oValue);
+    	    }
+    	}
+
+		return $aResults;
+	}
+
+	/**
+	 * classic method to get a list of entities
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return int
+	 */
+	public function update($oEntityCriteria)
+	{
+		$this->_checkEntity($oEntityCriteria);
+
+		if ($oEntityCriteria !== null) {
+
+			$aEntity = get_object_vars(LibEntity::getRealEntity($oEntityCriteria));
+		}
+		else {
+
+			$aEntity = array();
+		}
+
+		$sPrimaryKeyName = LibEntity::getPrimaryKeyName($oEntityCriteria);
+
+		if (is_array($sPrimaryKeyName)) {
+
+			$aPrimaryKeys = array();
+
+			foreach ($sPrimaryKeyName as $sOne) {
+
+				$aPrimaryKeys[$sOne] = $aEntity[$sOne];
+			}
+
+			$iResult = $this->orm
+					    	->update($this->_sTableName)
+							->set($aEntity)
+							->where($aPrimaryKeys)
+							->save();
+		}
+		else {
+
+			$iResult = $this->orm
+				 			->update($this->_sTableName)
+				 			->set($aEntity)
+				 			->where(array($sPrimaryKeyName => $aEntity[$sPrimaryKeyName]))
+							->save();
+		}
+
+		return $iResult;
+	}
+
+	/**
+	 * classic method to get a list of entities
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return int
+	 */
+	public function insert($oEntity)
+	{
+		$this->_checkEntity($oEntity);
+
+		$iResult = $this->orm
+						->insert($this->_sTableName)
+						->values(LibEntity::getAllEntity($oEntity))
+						->save();
+
+		return $iResult;
+	}
+
+	/**
+	 * get last row
+	 *
+	 * @access public
+	 * @return object
+	 */
+
+	public function getLastRow()
+	{
+		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		
+		$aResults = $this->orm
+					     ->select(array('*'))
+			 		     ->from($this->_sTableName)
+			 		     ->orderBy(array(LibEntity::getPrimaryKeyName($this->entity) => 'DESC'))
+			 		     ->limit(1)
+    				     ->load(false, $sEntityNamespace);
+
+    	if (isset($aResults[0]) && $this->_isFilter()) { $aResults[0] = $this->_applyFilter($aResults[0]); }
+
+		return $aResults[0];
+	}
+
+	/**
+	 * save Entity and get it
+	 *
+	 * @access public
+	 * @param  object $oEntity
+	 * @return int|object
+	 */
+	public function insertAndGet($oEntity)
+	{
+		$iResult = $this->insert($oEntity);
+		
+		if ($iResult) { return $this->getLastRow(); }
+
+		return $iResult;
+	}
+
+	/**
+	 * update Entity and get it
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return mixed
+	 */
+	public function updateAndGet($oEntity)
+	{
+		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		
+		$mResult = $this->update($oEntity);
+
+		if ($result) {
+			
+		    $aEntity = get_object_vars(LibEntity::getRealEntity($oEntity));
+			$mPrimaryKey = LibEntity::getPrimaryKeyName($aEntity);
+			
+			$mResult = $this->orm
+					        ->select(array('*'))
+			 		        ->from($this->_sTableName)
+			 		        ->where(array($mPrimaryKey => $aEntity[$mPrimaryKey]))
+    				        ->load(false, $sEntityNamespace);
+    	
+        	if ($this->_isFilter()) {
+        	     
+        	    foreach ($mResult as $iKey => $oValue) {
+        	         
+        	        $mResult[$iKey] = $this->_applyFilter($oValue);
+        	    }
+        	}
+		}
+
+		return $mResult;
+	}
+
+	/**
+	 * classic method to delete one entities
+	 *
+	 * @access public
+	 * @param  object $oEntityCriteria
+	 * @return object
+	 */
+	public function delete($oEntityCriteria)
+	{
+		$this->_checkEntity($oEntityCriteria);
+
+		$aEntity = LibEntity::getAllEntity($oEntityCriteria, true);
+
+		$this->orm
+		 	 ->delete($this->_sTableName)
+		 	 ->where($aEntity)
+		 	 ->save();
+		
+		return $this;
+	}
+
+	/**
+	 * classic method to truncate a table
+	 *
+	 * @access public
+	 * @return object
+	 */
+	public function truncate()
+	{    
+		$aClass = explode('\\', get_called_class());
+		$sClassName = $aClass[count($aClass) - 1];
+	
+	    $this->orm
+	         ->truncate($sClassName)
+	         ->save();
+		
+		return $this;
+	}
+
+	/**
+	 * add a filter on the results
+	 *
+	 * @access public
+	 * @param  callable $cCallback callback to do the filter on the results
+	 * @return object
+	 */
+	public function filter(callable $cCallback)
+	{    
+	    $this->_cFilterCallback = $cCallback;
+	    return $this;
+	}
+
+	/**
+	 * check if the entity passed is good
+	 *
+	 * @access private
+	 * @param  object $oEntityCriteria
+	 * @return void
+	 */
+	private function _checkEntity($oEntityCriteria)
+	{
+		$sClassName = get_called_class();
+		$sClassName = str_replace('Model', 'Entity', $sClassName);
+
+		if (!is_object($oEntityCriteria) || !$oEntityCriteria instanceof $sClassName) {
+
+			throw new \Exception('You must passed '.$sClassName.' like Entity!');
+		}
+	}
+
+	/**
+	 * apply the filter on the results
+	 *
+	 * @access private
+	 * @param  object $oResults result to apply filter
+	 * @return object
+	 */
+	private function _applyFilter($oResults)
+	{    
+	    return $this->_cFilterCallback($oResults);
+	}
+
+	/**
+	 * apply the filter on the results
+	 *
+	 * @access private
+	 * @param  object $oResults result to apply filter
+	 * @return object
+	 */
+	private function _isFilter()
+	{    
+	    if (is_callable($this->_cFilterCallback)) { return true; }
+	    else { return false; }
+	}
+}

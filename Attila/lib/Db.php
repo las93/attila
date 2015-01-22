@@ -4,6 +4,7 @@
  * Db Manager
  *
  * @category  	Attila
+ * @package  	Attila\lib
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
  * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
@@ -12,14 +13,15 @@
  * @link      	https://github.com/las93
  * @since     	1.0.0
  */
-namespace Attila;
+namespace Attila\lib;
 
-use \Attila\Db\Container as Container;
+use \Attila\lib\Db\Container as Container;
 
 /**
  * Db Manager
  *
  * @category  	Attila
+ * @package  	Attila\lib
  * @author    	Judicaël Paquet <judicael.paquet@gmail.com>
  * @copyright 	Copyright (c) 2013-2014 PAQUET Judicaël FR Inc. (https://github.com/las93)
  * @license   	https://github.com/las93/attila/blob/master/LICENSE.md Tout droit réservé à PAQUET Judicaël
@@ -42,7 +44,7 @@ class Db
 	 * the container of connection datas
 	 * 
 	 * @access private
-	 * @var    \Attila\Db\Container
+	 * @var    \Attila\lib\Db\Container
 	 */
 	private static $_oContainerConnection = null;
 

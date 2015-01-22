@@ -21,8 +21,8 @@
  */
 namespace Attila\Batch;
 
-use \Attila\Db as Db;
-use \Attila\Db\Container as DbContainer;
+use \Attila\lib\Db as Db;
+use \Attila\lib\Db\Container as DbContainer;
 use \Venus\core\Config as Config;
 
 /**

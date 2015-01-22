@@ -14,7 +14,7 @@
  */
 namespace Attila\core;
 
-use \Attila\Entity as LibEntity;
+use \Attila\lib\Entity as LibEntity;
 use \Attila\Orm as Orm;
 use \Attila\Orm\Where as Where;
 

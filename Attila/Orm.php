@@ -14,9 +14,9 @@
  */
 namespace Attila;
 
-use \Attila\Db as Db;
-use \Attila\Db\Container as Container;
-use \Attila\Entity as Entity;
+use \Attila\lib\Db as Db;
+use \Attila\lib\Db\Container as Container;
+use \Attila\lib\Entity as Entity;
 use \Attila\Orm\Where as Where;
 
 /**
