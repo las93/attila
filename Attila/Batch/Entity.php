@@ -213,14 +213,14 @@ class Entity
     				    if (isset($oOneField->many_to_many)) {
     				        
     				        if (!isset($oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many})) {
-    				            
-    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many} = new \stdClass();
+
+    				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many} = new \stdClass();    				            
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields = new \stdClass();
 
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName} = new \stdClass();
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->type = $oOneField->type;
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->key = 'primary';
-    				            
+
     				            if (isset($oOneField->null)) {
     				                
     				                $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->null = $oOneField->null;
@@ -239,6 +239,9 @@ class Entity
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many} = new \stdClass();
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->type = $sFieldOfManyToMany->type;
     				            $oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->key = 'primary';
+    				            //@todo : attribute ne se rajoute pas en field donc erreur dans jointure
+    				            //$oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$oOneField->many_to_many}->join = $oOneField->many_to_many;
+    				            //$oConnection->tables->{$sTableName.'_'.$oOneField->many_to_many}->fields->{'id_'.$sTableName}->join = $sTableName;
     				            
     				            if (isset($sFieldOfManyToMany->null)) {
     				                
@@ -282,7 +285,7 @@ class Entity
     				                $oConnection->tables->{$sOneFieldJoin}->fields->{$sJoinByField}->join_by_field[$iIndex] = $sFieldName;
     				            }
     				            else if (!isset($oConnection->tables->{$sOneFieldJoin}->fields->{$sJoinByField}->join)) {
-    
+
     				                $oConnection->tables->{$sOneFieldJoin}->fields->{$sJoinByField}->join = $sTableName;
     				                $oConnection->tables->{$sOneFieldJoin}->fields->{$sJoinByField}->join_by_field = $sFieldName;
     				            }

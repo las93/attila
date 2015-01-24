@@ -41,6 +41,30 @@ abstract class Model extends Mother
      * @var    callable
      */
     private $_cFilterCallback;
+	
+    /**
+     * Array to stock all join
+     * 
+     * @access private
+     * @var    array
+     */
+    private $_aHasOne = array();
+	
+    /**
+     * Array to stock all join
+     * 
+     * @access private
+     * @var    array
+     */
+    private $_aHasMany = array();
+	
+    /**
+     * Cache to know if a model was initialize or not because we must initialize it just one time by script
+     * 
+     * @access private
+     * @var    array
+     */
+    private static $_aInitialize = array();
     
 	/**
 	 * Constructor
@@ -77,6 +101,23 @@ abstract class Model extends Mother
 			
 			$this->where = function() { return new Where; };
 		}
+		
+		/**
+		 * Trigger on a model to initialize it. You could fill entity with it.
+		 */
+		if (method_exists(get_called_class(), 'initialize')) {
+		    
+		    if (!isset(self::$_aInitialize[get_called_class()])) { 
+		        
+		        static::initialize();
+		        self::$_aInitialize[get_called_class()] = true;
+		    }
+		}
+		
+		/**
+		 * Trigger on a model to initialize it every time you construct it
+		 */
+		if (method_exists(get_called_class(), 'onConstruct')) { static::onConstruct(); }
 	}
 
 	/**
@@ -611,14 +652,26 @@ abstract class Model extends Mother
 	}
 
 	/**
-	 * apply the filter on the results
+	 * apply the filter on the result and add the join
 	 *
 	 * @access private
-	 * @param  object $oResults result to apply filter
+	 * @param  object $oResult result to apply filter
 	 * @return object
 	 */
-	private function _applyFilter($oResults)
+	private function _applyFilter($oResult)
 	{    
+	    $oResult = $this->_cFilterCallback($oResult);
+	    
+	    foreach($this->_aHasOne as $sKey => $aParam) {
+	        
+	        $oResult->hasOne($aParam[0], $aParam[1], $aParam[2], $aParam[3], $aParam[4]);
+	    }
+	    
+	    foreach($this->_aHasMany as $sKey => $aParam) {
+	        
+	        $oResult->hasMany($aParam[0], $aParam[1], $aParam[2], $aParam[3], $aParam[4]);
+	    }
+	    
 	    return $this->_cFilterCallback($oResults);
 	}
 
@@ -633,5 +686,88 @@ abstract class Model extends Mother
 	{    
 	    if (is_callable($this->_cFilterCallback)) { return true; }
 	    else { return false; }
+	}
+
+	/**
+	 * create a join in many to one
+	 *
+	 * @access public
+	 * @param string $sPrimaryKeyName
+	 * @param string $sEntityJoinName
+	 * @param string $sForeignKeyName
+	 * @param string $sNamespaceEntity
+	 * @param array $aOptions
+	 * @return object
+	 */
+	public function belongsTo($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity, array $aOptions = array())
+	{
+	    $this->_aHasOne[$sEntityJoinName] = array($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity);
+	}
+
+	/**
+	 * create a join in many to many
+	 *
+	 * @access public
+	 * @param string $sPrimaryKeyName
+	 * @param string $sEntityJoinName
+	 * @param string $sForeignKeyName
+	 * @param string $sNamespaceEntity
+	 * @param unknown $sManyToManyKeyName
+	 * @param unknown $sManyToManyTableName
+	 * @param array $aOptions
+	 * @return object
+	 */
+	public function hasManyToMany($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sNamespaceEntity, $sManyToManyKeyName, $sManyToManyTableName, array $aOptions = array())
+	{
+	    $this->_ahasMany[$sEntityJoinName] = function($mParameters = null) use ($sPrimaryKeyName, $sEntityJoinName, $sForeignKeyName, $sManyToManyKeyName, $sManyToManyTableName, $sNamespaceEntity)
+	    {
+	        if (!isset($this->$sEntityJoinName)) {
+	             
+	            $oOrm = new Orm;
+	             
+	            $oOrm->select(array('*'))
+	                 ->from($sEntityJoinName);
+	    
+	            if ($mParameters) {
+	                 
+	                $aWhere[$sForeignKeyName] = $mParameters;
+	            }
+	            else {
+	                 
+	                $sMethodName = 'get_'.$sPrimaryKeyName;
+	                $aWhere[$sForeignKeyName] = $this->$sMethodName();
+	            }
+	    
+	    
+	            $this->$sEntityJoinName = $oOrm->where($aWhere)
+	                                           ->load(false, $sNamespaceEntity.'\\');
+	        }
+	        
+	        $aResults = array();
+	        
+	        foreach ($this->$sEntityJoinName as $iKey => $oOne) {
+	            
+	            $oOrm = new Orm;
+	            
+	            $oOrm->select(array('*'))
+	                 ->from($sManyToManyTableName);
+	             
+	            if ($mParameters) {
+	            
+	                $aWhere[$sManyToManyKeyName] = $mParameters;
+	            }
+	            else {
+	            
+	                $sMethodName = 'get_'.$sManyToManyKeyName;
+	                $aWhere[$sManyToManyKeyName] = $this->$sMethodName();
+	            }
+	             
+	             
+	            $aResults[] = $oOrm->where($aWhere)
+	                               ->load(false, $sNamespaceEntity.'\\');
+	        }
+	         
+	        return $aResults;
+	    };
 	}
 }

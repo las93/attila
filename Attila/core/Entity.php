@@ -62,7 +62,7 @@ abstract class Entity
      * @access private
      * @var    array
      */
-    private static $_aJoins = array();
+    private $_aJoins = array();
 
 	/**
 	 * Constructor
