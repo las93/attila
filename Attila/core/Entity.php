@@ -63,6 +63,20 @@ abstract class Entity
      * @var    array
      */
     private $_aJoins = array();
+	
+    /**
+     * Array to stock all foreign key
+     * 
+     * @access private
+     * @var    array
+     */
+    private $_aForeignKey = array();
+    
+    /**
+     * Cascade action on the foreign key
+     * @var int
+     */
+    const CASCADE = 1;
 
 	/**
 	 * Constructor
@@ -184,6 +198,104 @@ abstract class Entity
 		
 				$aEntity[$sKey] = $mField;
 			}
+		}
+		
+		/**
+		 * check if the virtual foreign key in this model is respected
+		 */
+		if (count($this->_aForeignKey) > 0) {
+
+		    foreach ($this->_aForeignKey as $sName => $aForeignKey) {
+
+		        if ($aForeignKey['has_one'] == 1) {
+		        
+		            $sMethodPrimaryKey = 'get_'.$aForeignKey['foreign_key'];
+				    $mFIeld = $this->$sMethodPrimaryKey();
+				    
+				    if ($mFIeld) {
+				        
+				        $oOrm = new Orm;
+				        	
+				        $iResults = $oOrm->select(array('*'))
+				                         ->from($aForeignKey['entity_join_name']);
+				        
+				        $oWhere = new Where;
+				        
+				        $oWhere->whereEqual($aForeignKey['primary_key_name'], $mFIeld);
+
+				        $aResults = $oOrm->where($oWhere)
+				                         ->load();
+			
+			            if (count($aResults) < 1) {
+			            	
+			                if ($aForeignKey['foreign_key']['message']) {
+			                    
+			                    throw new \Exception($aForeignKey['foreign_key']['message']);
+			                }
+			                else {
+			                    
+			                    throw new \Exception('Foreign Key not respected!');
+			                }
+			            }
+				    }
+		        }
+    		}
+		}
+		
+		/**
+		 * check if the virtual foreign key in the others models are respected
+		 */
+		$oReflectionClass  = new \ReflectionClass(get_called_class());
+		$oReflectionProperties = $oReflectionClass->getProperties();
+		
+		foreach($oReflectionProperties as $mKey => $aOne) {
+
+		    $sCommentPhpDoc = $aOne->getDocComment();
+		    
+		    if (strstr($sCommentPhpDoc, '@join')) {
+		        
+		        $sClassName = $aOne->class;
+		        $oClass = new $sClassName;
+		        
+		        if (count($oClass->getForeignKey()) > 0) {
+		        
+		            foreach ($oClass->getForeignKey() as $sName => $aForeignKey) {
+		        
+		                if ($aForeignKey['has_many'] == 1) {
+		        
+		                    $sMethodPrimaryKey = 'get_'.$aForeignKey['foreign_key'];
+		                    $mFIeld = $this->$sMethodPrimaryKey();
+		        
+		                    if ($mFIeld) {
+		        
+		                        $oOrm = new Orm;
+		                         
+		                        $iResults = $oOrm->select(array('*'))
+		                        ->from($aForeignKey['entity_join_name']);
+		        
+		                        $oWhere = new Where;
+		        
+		                        $oWhere->whereEqual($aForeignKey['primary_key_name'], $mFIeld);
+		        
+		                        $aResults = $oOrm->where($oWhere)
+		                                         ->load();
+		                        	
+		                        if (count($aResults) < 1) {
+		        
+		                            if ($aForeignKey['foreign_key']['message']) {
+		                                 
+		                                throw new \Exception($aForeignKey['foreign_key']['message']);
+		                            }
+		                            else {
+		                                 
+		                                throw new \Exception('Foreign Key not respected!');
+		                            }
+		                        }
+		                    }
+		                }
+		            }
+		        }
+		    }
 		}
 		
 		$oOrm = new Orm;
@@ -316,6 +428,17 @@ abstract class Entity
 	        
 	        return $this->$sEntityJoinName;
 	    };
+	    
+	    if (isset($aOptions['foreignKey']) && !isset($this->_aForeignKey[$sEntityJoinName])) {
+	    
+	        $this->_aForeignKey[$sEntityJoinName] = array(
+	            'primary_key' => $sPrimaryKeyName, 
+	            'entity_join_name' => $sEntityJoinName, 
+	            'foreign_key_name' => $sForeignKeyName,
+	            'foreign_key' => $aOptions['foreignKey'],
+	            'has_one' => 0
+	        );
+	    }
 	}
 
 	/**
@@ -356,6 +479,17 @@ abstract class Entity
 
 	        return $this->{$sEntityJoinName}[0];
 	    };
+	    
+	    if (isset($aOptions['foreignKey']) && !isset($this->_aForeignKey[$sEntityJoinName])) {
+	    
+	        $this->_aForeignKey[$sEntityJoinName] = array(
+	            'foreign_key' => $sPrimaryKeyName, 
+	            'entity_join_name' => $sEntityJoinName, 
+	            'primary_key_name' => $sForeignKeyName,
+	            'foreign_key' => $aOptions['foreignKey'],
+	            'has_one' => 1
+	        );
+	    }
 	}
 
 	/**
@@ -369,5 +503,16 @@ abstract class Entity
 	public function getRelated($sEntityJoinName, $mParameters)
 	{
 	    return $this->_aJoins[$sEntityJoinName]($mParameters);
+	}
+
+	/**
+	 * get foreign key declared
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function getForeignKey()
+	{
+	    return $this->_aForeignKey;
 	}
 }

@@ -65,9 +65,8 @@ class Mother implements \ArrayAccess
 			}
 			else {
 
-				$context = 'context' !== $mKey ? $this->context : null;
 				$dataStore = &$this->_aDataType[$mKey];
-				$dataStore[$mKey] = call_user_func($data, $context);
+				$dataStore[$mKey] = call_user_func($data, null);
 				return $dataStore[$mKey];
 			}
 		}
