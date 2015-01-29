@@ -228,9 +228,9 @@ abstract class Entity
 			
 			            if (count($aResults) < 1) {
 			            	
-			                if ($aForeignKey['foreign_key']['message']) {
+			                if ($aForeignKey['foreign_key_options']['message']) {
 			                    
-			                    throw new \Exception($aForeignKey['foreign_key']['message']);
+			                    throw new \Exception($aForeignKey['foreign_key_options']['message']);
 			                }
 			                else {
 			                    
@@ -282,9 +282,9 @@ abstract class Entity
 		                        	
 		                        if (count($aResults) < 1) {
 		        
-		                            if ($aForeignKey['foreign_key']['message']) {
+		                            if ($aForeignKey['foreign_key_options']['message']) {
 		                                 
-		                                throw new \Exception($aForeignKey['foreign_key']['message']);
+		                                throw new \Exception($aForeignKey['foreign_key_options']['message']);
 		                            }
 		                            else {
 		                                 
@@ -352,6 +352,46 @@ abstract class Entity
 				$sMethodPrimaryKey = 'get_'.$this->_mPrimaryKeyNameWithoutMapping[$sKey];
 				$aPrimaryKey[$sPrimaryKey] = $this->$sMethodPrimaryKey();
 			}
+		}
+		
+		/**
+		 * check if the virtual foreign key in this model is respected
+		 */
+		if (count($this->_aForeignKey) > 0) {
+
+		    foreach ($this->_aForeignKey as $sName => $aForeignKey) {
+
+		        if ($aForeignKey['has_one'] == 1 && isset($aForeignKey['foreign_key_options']['action'])
+		            && $aForeignKey['foreign_key_options']['action'] == self::CASCADE) {
+		        
+		            $sMethodPrimaryKey = 'get_'.$aForeignKey['foreign_key'];
+				    $mFIeld = $this->$sMethodPrimaryKey();
+				    
+				    if ($mFIeld) {
+				        
+				        $oOrm = new Orm;
+				        	
+				        $iResults = $oOrm->select(array('*'))
+				                         ->from($aForeignKey['entity_join_name']);
+				        
+				        $oWhere = new Where;
+				        
+				        $oWhere->whereEqual($aForeignKey['primary_key_name'], $mFIeld);
+
+				        $aResults = $oOrm->where($oWhere)
+				                         ->load();
+			
+			            if (count($aResults) > 0) {
+			            	
+			                $oOrm = new Orm;
+				        	
+    				        $oOrm->delete($aForeignKey['entity_join_name'])
+			                     ->where($oWhere)
+			                     ->save();
+			            }
+				    }
+		        }
+    		}
 		}
 		
 		$oOrm = new Orm;
@@ -435,7 +475,7 @@ abstract class Entity
 	            'primary_key' => $sPrimaryKeyName, 
 	            'entity_join_name' => $sEntityJoinName, 
 	            'foreign_key_name' => $sForeignKeyName,
-	            'foreign_key' => $aOptions['foreignKey'],
+	            'foreign_key_options' => $aOptions['foreignKey'],
 	            'has_one' => 0
 	        );
 	    }
@@ -486,7 +526,7 @@ abstract class Entity
 	            'foreign_key' => $sPrimaryKeyName, 
 	            'entity_join_name' => $sEntityJoinName, 
 	            'primary_key_name' => $sForeignKeyName,
-	            'foreign_key' => $aOptions['foreignKey'],
+	            'foreign_key_options' => $aOptions['foreignKey'],
 	            'has_one' => 1
 	        );
 	    }

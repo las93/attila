@@ -175,7 +175,7 @@ abstract class Model extends Mother
 
         if (preg_match('/^findOneBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
         	
-        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
         	
         	$aResults = $this->orm
         					 ->select(array('*'))
@@ -191,7 +191,7 @@ abstract class Model extends Mother
         }
         else if (preg_match('/^findBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
 
-        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
         	 
         	$aResults = $this->orm
         					 ->select(array('*'))
@@ -211,7 +211,7 @@ abstract class Model extends Mother
         }
         else if (preg_match('/^findOneOrderBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
 
-        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
         	 
         	$aMatchs[1] = preg_replace('/^(.+)(Desc)$/', '$1 $2', $aMatchs[1]);
         	$aMatchs[1] = preg_replace('/^(.+)(Asc)$/', '$1 $2', $aMatchs[1]);
@@ -230,7 +230,7 @@ abstract class Model extends Mother
         }
         else if (preg_match('/^findOrderBy([a-zA-Z_]+)$/', $sName, $aMatchs)) {
 
-        	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+        	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
         	 
         	$aMatchs[1] = preg_replace('/^(.+)(Desc)$/', '$1 $2', $aMatchs[1]);
         	$aMatchs[1] = preg_replace('/^(.+)(Asc)$/', '$1 $2', $aMatchs[1]);
@@ -262,7 +262,7 @@ abstract class Model extends Mother
      */
     public function findAll() 
     {
-    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
     	
     	$aResults = $this->orm
     					 ->select(array('*'))
@@ -291,7 +291,7 @@ abstract class Model extends Mother
      */
     public function findOneBy(array $aArguments)
     {
-    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
     	
     	$aResults = $this->orm
     					 ->select(array('*'))
@@ -317,7 +317,7 @@ abstract class Model extends Mother
      */
     public function findBy(array $aArguments)
     {
-    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
     	
     	$aResults = $this->orm
     					 ->select(array('*'))
@@ -347,7 +347,7 @@ abstract class Model extends Mother
      */
     public function findOneOrderBy(array $aArguments)
     {
-    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
     	 
     	$aResults = $this->orm
     					 ->select(array('*'))
@@ -372,7 +372,7 @@ abstract class Model extends Mother
      */
     public function findOrderBy(array $aArguments)
     {
-    	$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+    	$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
     	
     	$aResults = $this->orm
     					 ->select(array('*'))
@@ -400,7 +400,7 @@ abstract class Model extends Mother
 	 */
 	public function get($oEntityCriteria = null)
 	{
-		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
 		
 		if ($oEntityCriteria !== null) {
 
@@ -515,7 +515,7 @@ abstract class Model extends Mother
 
 	public function getLastRow()
 	{
-		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
 		
 		$aResults = $this->orm
 					     ->select(array('*'))
@@ -554,7 +554,7 @@ abstract class Model extends Mother
 	 */
 	public function updateAndGet($oEntity)
 	{
-		$sEntityNamespace = preg_replace('/^(Venus\\\\src\\\\[a-zA-Z]+\\\\)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		$sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
 		
 		$mResult = $this->update($oEntity);
 
@@ -769,5 +769,50 @@ abstract class Model extends Mother
 	         
 	        return $aResults;
 	    };
+	}
+
+	/**
+	 * count
+	 *
+	 * @access public
+	 * @param  array $aCriterias
+	 * @return int
+	 */
+	public function count(array $aCriterias = array())
+	{
+		if (count($aCriterias) < 1) {
+		    
+		    return count($this->findAll());
+		}
+		else if (isset($aCriterias['distinct'])) {
+		
+		    $sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		     
+		    $aResults = $this->orm
+		                     ->select(array('DISTINCT '.$aCriterias['distinct']))
+		                     ->from($this->_sTableName)
+		                     ->load(false, $sEntityNamespace);
+		    
+		    return count($aResults);
+		}
+		else if (isset($aCriterias['group'])) {
+		
+		    $sEntityNamespace = preg_replace('/^(.*)Model\\\\.+$/', '$1Entity\\', get_called_class());
+		     
+		    $aResults = $this->orm
+		                     ->select(array('COUNT(*) AS nb, '.$aCriterias['group']))
+		                     ->from($this->_sTableName)
+		                     ->groupBy(array($aCriterias['group']))
+		                     ->load(false, $sEntityNamespace);
+		    
+		    $aFinalResults = array();
+		    
+		    foreach ($aResults as $oOne) {
+		        
+		        $aFinalResults[$oOne->{'get_'.$aCriterias['group']}()] = $oOne->nb;
+		    }
+		    
+		    return $aFinalResults;
+		}
 	}
 }
