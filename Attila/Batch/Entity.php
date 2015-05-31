@@ -695,9 +695,10 @@ class '.$sTableName.' extends Entity
     			                     
     							$sContentFile .= ' = $oOrm->where($aWhere)
 						           ->load(false, \''.ENTITY_NAMESPACE.'\');';
-		 
-    							if ((!isset($oField->key) || (isset($oField->key) && $oField->key != 'primary' && !in_array('primary', $oField->key)))
-						          || ($sKey2 == 'primary' && $iPrimaryKey == 1)) { 
+
+    							if ((!isset($oField->key) || (isset($oField->key) && $oField->key != 'primary' 
+    							 && (is_array($oField->key) && !in_array('primary', $oField->key))))
+						         || ($sKey2 == 'primary' && $iPrimaryKey == 1)) { 
     								    
     							    $sContentFile .= "\n\n".'          if (count($aResult) > 0) { $this->'.$oField->join[$i].' = $aResult[0]; }
           else { $this->'.$oField->join[$i].' = array(); }';
@@ -717,7 +718,7 @@ class '.$sTableName.' extends Entity
 	 * @join
 	 * @return ';
 		 
-    							if (isset($oField->key) && ($oField->key == 'primary' || in_array('primary', $oField->key))) { 
+    							if (isset($oField->key) && ($oField->key == 'primary' || (is_array($oField->key) && in_array('primary', $oField->key)))) { 
     
     							    $sContentFile .= 'array';
     							}
@@ -730,7 +731,7 @@ class '.$sTableName.' extends Entity
 	 */
 	public function set_'.$sJoinUsedName.'(';
 		 
-    							if (isset($oField->key) && ($oField->key == 'primary' || in_array('primary', $oField->key))) { 
+    							if (isset($oField->key) && ($oField->key == 'primary' || (is_array($oField->key) && in_array('primary', $oField->key)))) { 
     
     							    $sContentFile .= 'array';
     							}
