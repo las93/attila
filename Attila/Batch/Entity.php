@@ -363,8 +363,25 @@ class Entity
 						else if (isset($oOneField->key) && $oOneField->key === 'index') { $aIndex[] = $sFieldName; }
 					
     					if (isset($oOneField->join) && is_string($oOneField->join)) {
+
+    					    if (isset($oOneField->constraint) && is_string($oOneField->constraint)) {
     					    
-    					    $sQuery .= 'FOREIGN KEY('.$sFieldName.') REFERENCES '.$oOneField->join.'('.$oOneField->join_by_field.'),';
+    					        $sQuery .= ' CONSTRAINT '.$oOneField->constraint.' ';
+    					    }
+    					    
+    					    $sQuery .= 'FOREIGN KEY('.$sFieldName.') REFERENCES '.$oOneField->join.'('.$oOneField->join_by_field.') ';
+    					    
+    					    if (isset($oOneField->join_delete) && is_string($oOneField->join_delete)) {
+    					        
+    					        $sQuery .= ' ON DELETE '.$oOneField->join_delete.' ';
+    					    }
+
+    					    if (isset($oOneField->join_update) && is_string($oOneField->join_update)) {
+    					        	
+    					        $sQuery .= ' ON UPDATE '.$oOneField->join_update.' ';
+    					    }
+    					    
+    					    $sQuery .= ',';
     					}
 					}
 
@@ -382,6 +399,10 @@ class Entity
 
 					$sQuery = substr($sQuery, 0, -2);
 					$sQuery .= ')';
+					
+					if (isset($oOneTable->engine)) {  $sQuery .= ' ENGINE='.$oOneTable->engine.' '; }
+					if (isset($oOneTable->auto_increment)) {  $sQuery .= ' AUTO_INCREMENT='.$oOneTable->auto_increment.' '; }
+					if (isset($oOneTable->default_charset)) {  $sQuery .= ' DEFAULT CHARSET='.$oOneTable->default_charset.' '; }
 
 					$oPdo->query($sQuery);
 				}
