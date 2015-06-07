@@ -205,9 +205,9 @@ class Entity
         		           ->setUser($oConnection->user);
 			    
 				$oPdo = Db::connect($oContainer);
-
+				
 				foreach ($oConnection->tables as $sTableName => $oOneTable) {
-				    
+
     				foreach ($oOneTable->fields as $sFieldName => $oOneField) {
     				
     				    if (isset($oOneField->many_to_many)) {
@@ -712,8 +712,8 @@ class '.$sTableName.' extends Entity
     							 && (is_array($oField->key) && !in_array('primary', $oField->key))))
 						         || ($sKey2 == 'primary' && $iPrimaryKey == 1)) { 
     								    
-    							    $sContentFile .= "\n\n".'          if (count($aResult) > 0) { $this->'.$oField->join[$i].' = $aResult[0]; }
-          else { $this->'.$oField->join[$i].' = array(); }';
+    							    $sContentFile .= "\n\n".'          if (count($aResult) > 0) { $this->'.$sJoinUsedName.' = $aResult[0]; }
+          else { $this->'.$sJoinUsedName.' = array(); }';
     							}
     			                     
     							$sContentFile .= '
