@@ -391,7 +391,7 @@ class Entity
 					
 					if (count($aIndex) > 0) { $sQuery .= 'KEY('.implode(',', $aIndex).') , '; }
 					
-					if (count($aIndex) > 0) { $sQuery .= 'UNIQUE KEY '.$aIndex[0].' ('.implode(',', $aIndex).') , '; }
+					if (count($aUnique) > 0) { $sQuery .= 'UNIQUE KEY '.$aUnique[0].' ('.implode(',', $aUnique).') , '; }
 
 					if (isset($oOneTable->index)) {
 
@@ -416,7 +416,11 @@ class Entity
 					if (isset($oOneTable->auto_increment)) {  $sQuery .= ' AUTO_INCREMENT='.$oOneTable->auto_increment.' '; }
 					if (isset($oOneTable->default_charset)) {  $sQuery .= ' DEFAULT CHARSET='.$oOneTable->default_charset.' '; }
 
-					$oPdo->query($sQuery);
+					if ($oPdo->query($sQuery) === false) {
+					    
+					   echo "\n[ERROR SQL] ".$oPdo->errorInfo()[2]." for the table ".$sTableName."\n"; 
+					   echo "\n".$sQuery."\n"; 
+					}
 				}
 			}
 
