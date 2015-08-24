@@ -70,13 +70,23 @@ class Entity
 
 	public function runScaffolding(array $aOptions = array())
 	{
+	    echo "You passed this parameters :\n";
+	    
+	    foreach ($aOptions as $mkey => $mValue) {
+	        
+	        echo $mkey." => ".$mValue."\n";
+	    }
+	    
+	    echo "If your parameters didn\'t passed, please verify the caracters (copy from word aren\'t ok)\n";
+	    echo "Batch continue now\n";
+	    
 		/**
 		 * option -p [portail]
 		 */
 
 		if (isset($aOptions['p'])) { 
 		    
-		    $sPortail = $aOptions['p'];
+		    $sPortal = $aOptions['p'];
 		}
 		else { 
 		    
@@ -788,7 +798,7 @@ class '.$sTableName.' extends Entity
  * @link      	'.LINK.'
  * @since     	1.0
  */
-namespace Venus\src\\'.$sPortail.'\Model;
+namespace Venus\src\\'.$sPortal.'\Model;
 
 use \Venus\core\Model as Model;
 	
