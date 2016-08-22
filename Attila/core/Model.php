@@ -92,7 +92,7 @@ abstract class Model extends Mother
 			{
 			    if ($oDbConfig === null) {
 			        
-			        $oDbConfig = json_decode(file_get_contents(__DIR__.'/../Db.conf'))->configuration;
+			        $oDbConfig = json_decode(file_get_contents(__DIR__ . '/../Db.conf'))->configuration;
 			    }
 			    
 			    return new Orm($oDbConfig->db, $oDbConfig->type, $oDbConfig->host, $oDbConfig->user, $oDbConfig->password, 
