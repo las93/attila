@@ -1,7 +1,7 @@
 {
     "name": "las93/attila",
     "license": "MIT",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "type": "ORM",
     "description": "ORM in PHP",
     "keywords": ["orm"],
@@ -14,7 +14,7 @@
         }
     ],
     "autoload": {
-        "psr-4": { "Attila": "Attila/" }
+        "psr-4": { "Attila\\": "Attila/" }
     },
     "require": {
         "php": ">=5.3.0"
