@@ -69,8 +69,8 @@ class Db
 			if ($oContainerConnection->getType() == 'mysql') {
 
 				try {
-
-					self::$_oPdo[$oContainerConnection->getName()] = new \PDO('mysql:host='.$oContainerConnection->getHost().';dbname='.$oContainerConnection->getDbName(), $oContainerConnection->getUser(), $oContainerConnection->getPassword(), array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+                    if ($oContainerConnection->getDbName()) { $dbText = ";dbname=".$oContainerConnection->getDbName(); } else { $dbText = ""; }
+					self::$_oPdo[$oContainerConnection->getName()] = new \PDO('mysql:host='.$oContainerConnection->getHost().$dbText, $oContainerConnection->getUser(), $oContainerConnection->getPassword(), array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 					self::$_oPdo[$oContainerConnection->getName()]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);
 					self::$_oPdo[$oContainerConnection->getName()]->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 				}
@@ -79,13 +79,14 @@ class Db
 					echo $oException->getMessage();
 				}
 			}
-			else if ($oDbConf->{$oContainerConnection->getName()}->type == 'mssql') {
+			else if ($oContainerConnection->getType() == 'mssql') {
 
-				self::$_oPdo[$oContainerConnection->getName()] = new \PDO('mssql:host='.$oContainerConnection->getHost().';dbname='.$oContainerConnection->getDbName(), $oContainerConnection->getUser(), $oContainerConnection->getPassword());
+                if ($oContainerConnection->getDbName()) { $dbText = ";dbname=".$oContainerConnection->getDbName(); } else { $dbText = ""; }
+                self::$_oPdo[$oContainerConnection->getName()] = new \PDO('mssql:host='.$oContainerConnection->getHost().$dbText, $oContainerConnection->getUser(), $oContainerConnection->getPassword());
 				self::$_oPdo[$oContainerConnection->getName()]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);
 				self::$_oPdo[$oContainerConnection->getName()]->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 			}
-			else if ($oDbConf->{$oContainerConnection->getName()}->type == 'sqlite') {
+			else if ($oContainerConnection->getType() == 'sqlite') {
 
 				self::$_oPdo[$oContainerConnection->getName()] = new \PDO('sqlite:'.$oContainerConnection->getHost());
 				self::$_oPdo[$oContainerConnection->getName()]->setAttribute(\PDO::ATTR_FETCH_TABLE_NAMES, 1);

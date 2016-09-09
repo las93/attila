@@ -18,6 +18,7 @@
 namespace Attila;
 
 use \Attila\Batch\Entity as Entity;
+use \Attila\Batch\Operation as Operation;
 
 include('../../../autoload.php');
 
@@ -35,30 +36,37 @@ while (count($aArguments) > 0) {
 
         $sOptionName = str_replace('-', '', $aArguments[0]);
 
-        if (isset($aArguments[1])) { $sOptionValue = $aArguments[1]; }
-        else { $sOptionValue = ''; }
+        if (isset($aArguments[1])) {
+            $sOptionValue = $aArguments[1];
+        } else {
+            $sOptionValue = '';
+        }
 
         if (isset(Entity::$aOptionsBatch[$sOptionName]) && Entity::$aOptionsBatch[$sOptionName] === false) {
 
             $aOptions[$sOptionName] = true;
             array_shift($aArguments);
-        }
-        else if (isset(Entity::$aOptionsBatch[$sOptionName]) && Entity::$aOptionsBatch[$sOptionName] === 'string') {
+        } else if (isset(Entity::$aOptionsBatch[$sOptionName]) && Entity::$aOptionsBatch[$sOptionName] === 'string') {
 
             $aOptions[$sOptionName] = $sOptionValue;
             array_shift($aArguments);
             array_shift($aArguments);
-        }
-        else {
+        } else {
 
             array_shift($aArguments);
         }
-    }
-    else {
+    } else {
 
         array_shift($aArguments);
     }
 }
 
-$oBatch = new Entity;
-$oBatch->runScaffolding($aOptions);
+if ($sBatchName == 'scaffolding:run') {
+    $oBatch = new Entity;
+    $oBatch->runScaffolding($aOptions);
+} else if ($sBatchName == 'db:init') {
+    $oBatch = new Operation;
+    $oBatch->createDb($aOptions);
+} else {
+    new \Exception("Error: batch doesn\\'t exist");
+}
