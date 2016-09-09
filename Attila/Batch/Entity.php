@@ -23,6 +23,7 @@ namespace Attila\Batch;
 
 use \Attila\lib\Db as Db;
 use \Attila\lib\Db\Container as DbContainer;
+use \Attila\lib\Bash;
 
 /**
  * Batch that create entity
@@ -64,12 +65,19 @@ class Entity
 	 *
 	 * @access public
 	 * @param  array $aOptions options of script
-	 * @param  string $sRewrite rewrite or not the file (no/yes)
 	 * @return void
 	 */
 
 	public function runScaffolding(array $aOptions = array())
 	{
+
+        /**
+         * option -v [if you want the script tell you - dump of sql]
+         */
+
+        if (isset($aOptions['v'])) { $bDumpSql = true;}
+        else { $bDumpSql = false; }
+
 	    echo "You passed this parameters :\n";
 	    
 	    foreach ($aOptions as $mkey => $mValue) {
@@ -77,7 +85,7 @@ class Entity
 	        echo $mkey." => ".$mValue."\n";
 	    }
 	    
-	    echo "If your parameters didn\'t passed, please verify the caracters (copy from word aren\'t ok)\n";
+	    echo "\nIf your parameters didn't passed, please verify the characters (copy from word aren't ok)\n";
 	    echo "Batch continue now\n";
 	    
 		/**
@@ -180,7 +188,7 @@ class Entity
 		            if (!defined(strtoupper($sKey))) { define(strtoupper($sKey), $mValue); }
 		        }
 		    }
-		}
+	    }
 
 		if ($sSqlJsonFile !== false) { $oJson = json_decode(file_get_contents($sSqlJsonFile)); }
 		else { $oJson = json_decode($sSqlJson); }
@@ -324,7 +332,7 @@ class Entity
 					if ($bDropTable === true) {
 						
 						$sQuery = 'DROP TABLE IF EXISTS '.SQL_FIELD_NAME_SEPARATOR.$sTableName.SQL_FIELD_NAME_SEPARATOR;
-						$oPdo->query($sQuery);
+						if ($bDumpSql) { echo $sQuery."\n"; } else { $oPdo->query($sQuery); }
 					}
 					
 					$sQuery = 'CREATE TABLE IF NOT EXISTS '.SQL_FIELD_NAME_SEPARATOR.$sTableName.SQL_FIELD_NAME_SEPARATOR.' (';
@@ -426,7 +434,9 @@ class Entity
 					if (isset($oOneTable->auto_increment)) {  $sQuery .= ' AUTO_INCREMENT='.$oOneTable->auto_increment.' '; }
 					if (isset($oOneTable->default_charset)) {  $sQuery .= ' DEFAULT CHARSET='.$oOneTable->default_charset.' '; }
 
-					if ($oPdo->query($sQuery) === false) {
+                    if ($bDumpSql) {
+                        echo $sQuery."\n";
+                    } else  if ($oPdo->query($sQuery) === false) {
 					    
 					   echo "\n[ERROR SQL] ".$oPdo->errorInfo()[2]." for the table ".$sTableName."\n"; 
 					   echo "\n".$sQuery."\n"; 
@@ -823,5 +833,11 @@ class '.$sTableName.' extends Model
 					}
 				}
 			}
+
+        echo "\n\n";
+        echo Bash::setBackground("                                                                            ", 'green');
+        echo Bash::setBackground("          [OK] Success                                                      ", 'green');
+        echo Bash::setBackground("                                                                            ", 'green');
+        echo "\n\n";
 	}
 }
