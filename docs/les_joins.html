@@ -1,0 +1,174 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Les joins</h1>
+        <a href="utilisation_orm.html">[précédent]</a><br/><br/>
+
+        Venus permet aux entités de se lier entre elles. Pour cela il suffit de définir un join sur un des champs join
+        dans le Db.conf comme ceci :
+
+        <pre>
+"id_product": {
+    "type": "int",
+    "null": false,
+    "unsigned": true,
+    "join": "product",
+    "join_by_field": "id"
+},
+        </pre>
+
+        Le join représente la table sur laquelle se lier et join_by_field le champs sur lequel faire la jointure. Vous
+        pouvez omettre le deuxième paramètre si le champ a le même nom sur les deux tables.<br/><br/>
+        La jointure se fait automatiquement sur les deux tables donc il est inutile de la déclarer sur les deux tables.
+        <br/><br/>
+        Venus permet de définir des clés étrangères complètes dans les fichiers de configurations de bases de données.
+        Voici un exemple complet :
+
+        <pre>
+"id_role": {
+    "type": "int",
+    "value": "10",
+    "null": false,
+    "join": "role",
+    "join_by_field": "id",
+    "join_delete": "cascade",
+    "join_update": "cascade",
+    "constraint": "role_fk"
+},
+        </pre>
+
+        Attila vous propose de créer vos tables et vos entités de type many to many automatiquement. Pour cela il suffit
+        de rajouter le champ « many_to_many » sur la clé primaire de la table en indiquant la table sur laquelle vous
+        voulez faire ce type de jointure. Voici un exemple ci-dessous :<br/><br/>
+
+        <pre>
+"tables": {
+    "attribute": {
+        "fields": {
+            "id": {
+                "type": "int",
+                "key": "primary",
+                "null": false,
+                "unsigned": true,
+                "autoincrement": true,
+                "many_to_many": "category"
+            },
+            "name": {
+                "type": "varchar",
+                "value": 100,
+                "null": false
+            },
+            "type": {
+                "type": "enum",
+                "values": [ "predefined", "free" ],
+                "null": false
+            }
+        }
+    },
+    "category": {
+        "fields": {
+            "id": {
+                "type": "int",
+                "key": "primary",
+                "null": false,
+                "unsigned": true,
+                "autoincrement": true
+            },
+            "name": {
+                "type": "varchar",
+                "null": false,
+                "value": 100
+            }
+        }
+    }
+}
+        </pre>
+
+        Il va créer automatiquement la table (et l’entité correspondante ci-dessous sans que vous ayez besoin de la
+        définir dans votre fichier de configuration.<br/><br/>
+        Si vous écrivez vous-même vos entités, il est également possible de créer vous-même vos jointures dans la
+        fonction trigger initialize() comme ci-dessous des jointures « one to many » ou « one to one » :
+
+        <pre>
+public function initialize()
+{
+    $this->hasMany('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity');
+}
+
+public function initialize()
+{
+    $this->hasOne('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity');
+}
+        </pre>
+
+        Dans ces fonctions, le premier paramètre correspond au champ de l’entité sur lequel on fera la jointure, le
+        deuxième paramètre est le nom de l’entité destinataire sur laquelle on veut fait la jointure, le troisième
+        paramètre est le nom du champ de l’entité destinataire sur lequel on fait la jointure et le quatrième paramètre
+        est le namespace de l’entité destinataire.<br/><br/>
+        Quand vous avez déclaré vos relations, vous pouvez appeler votre relation en ajoutant get_ au nom de l’entité
+        destinataire sur laquelle on fait la jointure :
+
+        <pre>
+$oMyCategory->get_product();
+        </pre>
+
+        Nous pouvons également définit une fonction qui prendra cette fonction grâce à la méthode getRelated() :
+
+        <pre>
+public function GetMaRelationAProduct($mParameters)
+{
+    return $this->getRelated('product', $mParameters);
+}
+        </pre>
+
+        Attila permet de créer aussi des jointures « many to one » avec belongsTo() ou « many to many » avec
+        hasManyToMany() à partir des modèles qui gèrent les listes de résultats. Voici les deux fonctions à ajouter pour
+        offrir ces jointures à vos modèles :
+
+        <pre>
+public function initialize()
+{
+    $this->belongsTo('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity');
+}
+
+public function initialize()
+{
+    $this->hasManyToMany('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity', 'id_ category', 'category');
+}
+        </pre>
+
+        Attila permet de créer des clés étrangères virtuelles (à partir des entités). Même si vos bases ne contiennent
+        pas de clés étrangères, Attila fera les tests nécessaires pour valider les insertions ou les suppressions. Vous
+        pourrez déclarer ces clés étrangères des deux côtés :
+
+        <pre>
+public function initialize()
+{
+    $this->hasMany('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity', array (
+        ‘foreignKey’ => array(
+            ‘message’ => ‘ca ne marche pas’
+        )
+    ));
+}
+
+public function initialize()
+{
+    $this->hasOne('id', 'product', 'id_main_category', '\Venus\src\Helium\Entity', array (
+        ‘foreignKey’ => array(
+            ‘action => self::CASCADE
+        )
+    ));
+}
+        </pre>
+
+        <a href="tables_avancees.html">[suivant]</a>
+    </body>
+</html>

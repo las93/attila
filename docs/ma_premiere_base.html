@@ -1,0 +1,40 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Ma première base</h1>
+        <a href="index.html">[précédent]</a><br/><br/>
+        Quand vous avez configuré la connexion à Atilla, vous pouvez créer la base de données vous-même ou demander à Attila
+        de la faire pour vous.<br/><br/>
+        <pre>
+            CREATE DATABASE attila;
+            (ou)
+            php index.php db:init <span style="color:green"><small>(v2.0.0)</small></span>
+            (ou sur Venus 3)
+            php bin/console db:init <span style="color:green"><small>(v2.0.0)</small></span>
+        </pre>
+
+        A présent, vous pouvez lancer le script qui va lancer la création de votre première table. Pour cela, Attila propose
+        une commande qui va transformer votre fichier de configuration en table (sql) et en entité (php).<br/><br/>
+
+        <pre>
+            php index.php scaffolding:run -v -p HomeBundle -c <span style="color:green"><small>(v2.0.0)</small></span>
+            (ou sur Venus 3)
+            php bin/console  scaffolding:run -v -p HomeBundle -c <span style="color:green"><small>(v2.0.0)</small></span>
+        </pre>
+
+        L'option -v permet d'afficher les requêtes SQL qui ne seront pas insérées pour une dernière vérification. Si
+        vous enlevez cette option, les requêtes SQL seront exécutées dans votre base de données.<br/><br/>
+        Attila permet de lister les requêtes SQL qu’il va faire avec l’option -v combinée à l’option -e sans les
+        éxécuter.
+
+        <a href="entites_et_models.html">[suivant]</a>
+    </body>
+</html>

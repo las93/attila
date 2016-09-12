@@ -56,7 +56,8 @@ class Entity
         "a" => "string",
         "g" => "string",
         "h" => "string",
-        "i" => "string"
+        "i" => "string",
+        "v" => false
     );
     
 	/**
@@ -70,7 +71,6 @@ class Entity
 
 	public function runScaffolding(array $aOptions = array())
 	{
-
         /**
          * option -v [if you want the script tell you - dump of sql]
          */
@@ -78,16 +78,6 @@ class Entity
         if (isset($aOptions['v'])) { $bDumpSql = true;}
         else { $bDumpSql = false; }
 
-	    echo "You passed this parameters :\n";
-	    
-	    foreach ($aOptions as $mkey => $mValue) {
-	        
-	        echo $mkey." => ".$mValue."\n";
-	    }
-	    
-	    echo "\nIf your parameters didn't passed, please verify the characters (copy from word aren't ok)\n";
-	    echo "Batch continue now\n";
-	    
 		/**
 		 * option -p [portail]
 		 */
@@ -149,7 +139,7 @@ class Entity
 		 */
 
 	    if (isset($aOptions['b'])) { $sSqlJson = $aOptions['b']; }
-		else { $sSqlJson = false; }
+		else { $sSqlJson = false; $sSqlJsonFile = str_replace('Batch', '', __DIR__).'Db.conf'; }
 
 		/**
 		 * option -d [drop table]

@@ -1,0 +1,129 @@
+<!doctype>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body{
+            font-family: arial;font-size:12px;
+        }
+    </style>
+</head>
+    <body>
+        <h1>Entités et modèles</h1>
+        <a href="ma_premiere_base.html">[précédent]</a><br/><br/>
+        Une entité est un conteneur représentatif de la table (avec des possibilités d’extensions) et le modèle est le
+        gestionnaire de cette entité avec de nombreuses fonctions de manipulations de bases (plus de 90% des besoins).
+        <br/><br/>
+        Le modèle est une classe vide dans laquelle on peut réaliser des demandes ORM plus complexes afin de répondre à
+        l’ensemble des besoins de manipulations de Base de données. Voici un exemple :
+
+        <pre>
+	/**
+	 * Get Lasts folders
+	 *
+	 * @access public
+	 * @param  integer $iLimit limit
+	 * @return array
+	 */
+
+	public function getLastFolders($iLimit = 3) {
+
+		$aJoin = [
+					[
+						'type' => 'right',
+						'table' => 'article_type',
+						'as' => 'at',
+						'left_field' => 'at.id',
+						'right_field' => 'a.id_article_type'
+					]
+		];
+
+		$result = $this->orm
+				  ->select(array('SQL_CALC_FOUND_ROWS', '*'))
+				  ->from($this->_sTableName, 'a')
+				  ->join($aJoin)
+				  ->where(array('a.id_article_type' => 3))
+				  ->orderBy(array('a.'.LibEntity::getPrimaryKeyName($this->entity).' DESC'))
+				  ->limit($iLimit)
+				  ->load();
+
+		$result[0]->count = $this->orm
+					      ->select(array('FOUND_ROWS()'))
+					      ->load();
+
+		$result[0]->pages = floor($result[0]->count / 10);
+
+		if (isset($result)) { return $result; }
+		else { return array(); }
+	}
+        </pre>
+
+        Entité : /las93/attila/Attila/Entity/Exemple1.php (sous Attila 2)<br/>
+        Modèle : /las93/attila/Attila/Model/Exemple1.php (sous Attila 2)<br/>
+        Entité : /bundles/src/Demo/app/Entity/Exemple1.php (sous Venus 3)<br/>
+        Modèle : /bundles/src/Demo/app/Model/Exemple1.php (sous Venus 3)<br/><br/>
+
+        Nous détaillerons la façon de faire des requêtes Attila plus tard dans un prochain chapitre. Ici vous pouvez
+        deviner que nosu faisons un select avec une jointure.<br/><br/>
+
+        <pre>
+			php index.php scaffolding:run -v -p HomeBundle -c <span style="color:green"><small>(v2.0.0)</small></span>
+			(ou sur Venus 3)
+			php bin/console  scaffolding:run -v -p HomeBundle -c <span style="color:green"><small>(v2.0.0)</small></span>
+		</pre>
+
+        L'option -v permet d'afficher les requêtes SQL qui ne seront pas insérées pour une dernière vérification. Si
+        vous enlevez cette option, les requêtes SQL seront exécutées dans votre base de données.<br/><br/>
+		Les entités ont deux triggers qui permettent d’être initialisé :<br/><br/>
+		1/ La fonction initialize permet d’initialiser l’entité la première fois qu’elle est appelée et uniquement cette
+		fois-là pendant tout le déroulement du script (également disponible sur le modèle) :
+
+		<pre>
+public function initialize() { ; }
+		</pre>
+
+		2/ La fonction onConstruct permet d’initialiser l’entité à chaque fois qu’elle est instanciée (également
+		disponible sur le modèle)  :<br/><br/>
+
+		<pre>
+public function onConstruct() { ; }
+		</pre>
+
+		3/ La fonction beforeSave permet d’initialiser l’entité avant chaque save effectué :
+
+		<pre>
+public function beforeSave() { ; }
+		</pre>
+
+		4/ La fonction afterFetch permet d’initialiser l’entité dès qu’elle a été remplit (par load) :
+
+		<pre>
+public function afterFetch() { ; }
+		</pre>
+
+		Attila permet compter le nombre de résultats d’une table grâce à la fonction count :
+
+		<pre>
+$oCategory = new Category;
+var_dump($oCategory->count());
+		</pre>
+
+		Attila permet compter le nombre de résultats d’une table en faisant un distinct précis sur un champ grâce à la
+		fonction count :
+
+		<pre>
+$oCategory = new Category;
+var_dump($oCategory->count(‘distinct’ => ‘name’));
+		</pre>
+
+		Attila permet compter le nombre de résultats d’une table en retournant le nombre de résultat pour chaque ligne
+		grâce au paramètre group :
+
+		<pre>
+$oCategory = new Category;
+var_dump($oCategory->count(‘group’ => ‘name’));
+		</pre>
+
+		<a href="utilisation_des_modeles.html">[suivant]</a>
+    </body>
+</html>

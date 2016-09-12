@@ -1,7 +1,7 @@
-{
+﻿{
     "name": "las93/attila",
     "license": "MIT",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "type": "ORM",
     "description": "ORM in PHP",
     "keywords": ["orm"],
@@ -10,7 +10,7 @@
         {
             "name": "Paquet Judicaël",
             "email": "las92i@homail.fr",
-            "role": "Developer"
+            "role": "CIO"
         }
     ],
     "autoload": {

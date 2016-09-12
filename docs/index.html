@@ -1,0 +1,47 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Getting Start</h1>
+        Pour commencer, il faut configurer votre base de données grâce à un fichier json. Par défaut celui-ci se trouve
+        Dans le dossier Attila/conf/Db.conf<br/><br/>
+        <span style="color:green">Sur Venus 3, vous trouverez celui-ci dans /bundles/conf/Db.conf</span><br/><br/>
+        Voici à quoi ressemble le fichier de configuration d'une base de données :<br/><br/>
+        <pre>
+{
+    "configuration": {
+        "type": "mysql",
+        "host": "127.0.0.1",
+        "db": "attila",
+        "user": "root",
+        "password": "root",
+        "tables": {
+            "user": {
+                "fields": {
+                    "id": {
+                        "type": "int",
+                        "key": "primary",
+                        "null": false,
+                        "undefined": true,
+                        "autoincrement": true
+                    }
+                }
+            }
+        }
+    }
+}
+        </pre>
+        La connexion se configure de façon classique comme vous pouvez le constater ci-dessus. Il est essentiel ensuite
+        de configurer les tables de notre projet (nosu verrons cela en détail plus tard.<br/><br/>
+        Attila vous propose différents outils pour automatiser la créaetion des tables, des entités et des modèles
+        (équivalent à un repository).<br/><br/>
+        <a href="ma_premiere_base.html">[suivant]</a>
+    </body>
+</html>

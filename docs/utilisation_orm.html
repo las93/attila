@@ -1,0 +1,104 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Utilisation de l'ORM</h1>
+        <a href="utilisation_des_modeles.html">[précédent]</a><br/><br/>
+        Les modèles proposent de bases de nombreuses fonctions pour jouer avec les entités que l’on a vu précédemment
+        mais elles peuvent rapidement ne pas suffire au besoin utilisateur. Nous allons donc voir pour créer de
+        nouvelles méthodes en utilisant l’ORM interne afin de créer des modèles nettement plus complexes et qui
+        s’adaptent à nos besoins.<br/><br/>
+        Voici un exemple de requeête que l'on fait avec l'ORM:
+
+        <pre>
+public function getMyTitles($iLimit = 10, $iOffset = 0) {
+
+    $aResult = array();
+
+    $aResult['items'] = $this->orm
+                 ->select(array('SQL_CALC_FOUND_ROWS', '*'))
+                 ->from($this->_sTableName, 'a')
+                 ->where($this->where->whereEqual('a.title', 'test1')->orWhereEqual('a.title', 'test2'))
+                 ->orderBy(['a.id DESC'])
+                 ->limit($iLimit, $iOffset)
+                 ->load();
+
+    $aResult['count'] = $this->orm
+                 ->select(array('FOUND_ROWS()'))
+                 ->load();
+
+    $aResult['pages'] = floor($result['count'] / $iLimit);
+
+    return $aResult;
+}
+
+        </pre>
+
+        Ici, nous faisons exprès de faire un tableau contenant les données dans item et le total de ligne retournée
+        dans count. Vous pouvez choisir de procéder autrement mais notre conseil est de faire plutôt dans ce style.
+        <br/><br/>
+        Le load va déclencher la requête comme le suppose cet exemple et retourner les données. $this->orm est un
+        raccourci proposé par défaut afin de vous faciliter la tache.<br/><br/>
+        Voici un petit explicatif des éléments existants dasn notre construction de requête par orm :<br/><br/>
+
+        <pre>
+
+$this->orm->select(array $aSelect)              En mettant SQL_CALQ_FOUND_ROWS en premier, l’ORM comprend
+                                                automatiquement la demande de préparer un count total.
+                                                Il faut mettre les champs désirés en tableau.
+
+$this->orm->from($this->_sTableName, ‘a’)       Le $this->_stableName est la variable qui permet d’inqiquer
+                                                automatiquement la table du modèle.
+                                                Il est possible voire conseillé de mettre un deuxième paramètre qui
+                                                permet d’indiquer un alias.
+
+$this->orm->where($oObjectWhere)                Le where doti être complété avec un objet de type Where qui permet de
+                                                faire des where très détaillé sous forme d’ORM.
+
+$this->orm->orderBy($aOrders)                   Permet de définir le order by sachant qu’on donne un tableau ce qui
+                                                permet d’indiquer plusieurs ordres comme en SQL
+
+$this->orm->limit($iLimit, $iOffset)            Permet d’inqiquer une limitation et le numéro du premier élément à
+                                                retourner. Le $iOffset n’est pas obligatoire.
+
+$aResult = $this->orm->load();                  Permet de charger la requête préparée précédement et de recevoir le
+                                                résultat de la base de données.
+
+        </pre>
+
+        Pour faire une transaction sous Attila, il faut utiliser les fonctions suivantes de l’ORM :
+
+        <pre>
+// Commencer une transaction
+$oOrm->begin();
+
+// Valider une transaction qui s’appliquera intégralement en base
+$oOrm->commit() ;
+
+// Invalider une transaction qui ne s’appliquera pas en base.
+// Toutes les modifications seront annulées
+$oOrm->rollback() ;
+        </pre>
+
+        Attila vous propose de créer des filtres qui s’appliquent avant le retour des résultats au contrôleur.
+
+        <pre>
+$cFilter = function($oArticle) {
+
+    $oArticle->title = ‘Monsite.com : ’.$oArticle->title;
+}
+
+$aResults = $oArticleModel->filter($cFilter)
+                          ->find();
+        </pre>
+
+        <a href="les_joins.html">[suivant]</a>
+    </body>
+</html>

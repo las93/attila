@@ -1,0 +1,167 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Tables ab=vancées</h1>
+        <a href="les_joins.html">[précédent]</a><br/><br/>
+
+        Venus permet de définir des compléments d’information sur les tables que vous voulez créer comme le moteur
+        utilisé, l’auto-increment de départ et le charset par défaut de la table. Voici un exemple de table avec ce type
+        de définition :
+
+        <pre>
+"board": {
+    "fields": {
+        "id": {
+            "type": "int",
+            "key": "primary",
+            "null": false,
+            "unsigned": true,
+            "autoincrement": true
+        },
+        "name": {
+            "type": "varchar",
+            "value": "50",
+            "null": false
+        },
+        "id_role": {
+            "type": "int",
+            "value": "10",
+            "null": false,
+            "join": "role",
+            "join_by_field": "id",
+            "join_delete": "cascade",
+            "join_update": "cascade",
+            "constraint": "role_fk"
+        },
+        "id_user": {
+            "type": "int",
+            "value": "10",
+            "null": false,
+            "join": "user",
+            "join_by_field": "id",
+            "join_delete": "cascade",
+            "join_update": "cascade",
+            "constraint": "user_fk"
+        }
+    },
+    "engine": "InnoDB",
+    "auto_increment": 3,
+    "default_charset": "utf8"
+}
+        </pre>
+
+        Venus permet de définir des index de deux façons différentes (soit groupé, soit directement sur les champs en
+        question). On ne pourra créer des index multiple que dans la première façon de faire en revanche. Voici deux
+        exemples de table avec ce type de définition :
+
+        <pre>
+"user": {
+    "fields": {
+        "id": {
+            "type": "int",
+            "key": "primary",
+            "null": false,
+            "unsigned": true,
+            "autoincrement": true
+        },
+        "id_team": {
+            "type": "int",
+            "null": false,
+            "unsigned": true
+        }
+    },
+    "index": [
+        "id_team_name_index": ["id_team"]
+    ],
+    "engine": "InnoDB",
+    "auto_increment": 1,
+    "default_charset": "utf8"
+},
+
+(ou)
+
+"user": {
+    "fields": {
+        "id": {
+            "type": "int",
+            "key": "primary",
+            "null": false,
+            "unsigned": true,
+            "autoincrement": true
+        },
+        "id_team": {
+            "type": "int",
+            "null": false,
+            "unsigned": true,
+            "key": “index”
+        }
+    },
+    "engine": "InnoDB",
+    "auto_increment": 1,
+    "default_charset": "utf8"
+},
+        </pre>
+
+        Attila permet de définir des champs uniques de deux façons différentes (soit groupé, soit directement sur les
+        champs en question). On ne pourra créer des champs uniques multiples que dans la première façon de faire en
+        revanche. Voici deux exemples de table avec ce type de définition :
+
+        <pre>
+"user": {
+    "fields": {
+        "id": {
+            "type": "int",
+            "key": "primary",
+            "null": false,
+            "unsigned": true,
+            "autoincrement": true
+        },
+        "id_team": {
+            "type": "int",
+            "null": false,
+            "unsigned": true
+        }
+    },
+    "unique": [
+        "id_team_name_index": ["id_team"]
+    ],
+    "engine": "InnoDB",
+    "auto_increment": 1,
+    "default_charset": "utf8"
+},
+
+(ou)
+
+"user": {
+    "fields": {
+        "id": {
+            "type": "int",
+            "key": "primary",
+            "null": false,
+            "unsigned": true,
+            "autoincrement": true
+        },
+        "id_team": {
+            "type": "int",
+            "null": false,
+            "unsigned": true,
+            "key": “unique”
+        }
+    },
+    "engine": "InnoDB",
+    "auto_increment": 1,
+    "default_charset": "utf8"
+},
+        </pre>
+        
+        <a href="xxx.html">[suivant]</a>
+    </body>
+</html>

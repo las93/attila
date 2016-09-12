@@ -1,0 +1,59 @@
+<!doctype>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: arial;font-size:12px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Utilisation des modèles et des entités</h1>
+        <a href="entites_et_models.html">[précédent]</a><br/><br/>
+        Les modèles proposés par Attila proposent de nombreuses fonctions pour récupérer les données que vous désirez.
+        Voici l'exepemple de base, d'un implémentation du modèle :<br/><br/>
+
+        <pre>
+            $model = new \Attila\Model\News;
+            $listNews = $this->modelNews->get();
+        </pre>
+
+        Le tableau renvoyé est comme ceci : array(\Attila\Entity\News, \Attila\Entity\News). Ceci permet aisément de
+        gérer les données News retournées par l'ORM. Voici un foreach d'exemple qui va vous permettre de comprendre
+        comment gérer vos données en un coup d'oeil :<br/><br/>
+
+        <pre>
+            foreach ($aExemple as $iKey => $oNews) {
+                echo $oNews->get_title() . “<br/>”; # le champ appelé de la base de données est 'title'
+            }
+        </pre>
+
+        Voici un tableau récapitulatif des méthodes de bases proposées par un modèle pour vous accélérer le travaik
+        sur les entités sur lesquelles vosu désirez travailler.<br/><br/>
+
+        <pre>
+            get() ou get($ocriteria)        Obtenir une liste               array<\Attila\Entity\News>
+            update(($ocriteria)             Modifier
+            insert(($ocriteria)             Insérer
+            delete(($ocriteria)             supprimer
+            truncate()                      vider la table
+            findOneByid($id)                obtenir la ligne en question    \Attila\Entity\News
+            findByid($id)                   obtenir la lsite correspondant  array<\Attila\Entity\News>
+            findAll()                       identique get()                 array<\Attila\Entity\News>
+            findOneBy($criterias)           obtenir la ligne en question    \Attila\Entity\News
+                                            $criteria est un tableau de
+                                            type array('champ' => value)
+            findBy();                       obtenir la liste en question    array<\Attila\Entity\News>
+        </pre>
+
+        Les entités ont également la chance de ne pas être de simple container. Elles intègrent une intelligence très
+        utile dans vos développements comme les fonctions $entity->save(); ou $entity->remove(); qui permettent de
+        sauvegarder les modifications ou de supprimer respectivement l'entité.<br/><br/>
+        Vous pouvez faire $entity->save(true); pour accepter un INSERT ON DUPLICATE KEY sur l'entité. Pour ceux qui
+        ne connaissent pas, cela permet de faire un Update si la clé primaire/multiple existe ou un insert dans le cas
+        inverse.<br/><br/>
+
+        <a href="utilisation_orm.html">[suivant]</a>
+    </body>
+</html>
